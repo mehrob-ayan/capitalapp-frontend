@@ -140,6 +140,12 @@ export interface History {
 }
 export const getHistory = (period: string) => request<History>(`/api/v1/history?period=${period}`)
 
+export interface AssetHistory {
+  currency: string
+  points: { date: string; value: number }[]
+}
+export const getAssetHistory = (id: number) => request<AssetHistory>(`/api/v1/assets/${id}/history`)
+
 export interface Goal {
   id: number
   title: string

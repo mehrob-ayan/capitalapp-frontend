@@ -1,7 +1,11 @@
-import type { Asset } from '../api'
+import { useEffect, useState } from 'react'
+import { getAssetHistory, type Asset, type AssetHistory } from '../api'
 import { KIND_META, kindColor } from '../kinds'
 import { money, percent, monthYear, duration } from '../format'
 import { TopBar } from '../components/TopBar'
+import { AreaChart } from '../components/AreaChart'
+
+const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment'])
 
 const SUBTYPE_LABEL: Record<string, string> = { stock: 'Акции', bond: 'Облигации', fund: 'Фонд' }
 
@@ -20,6 +24,12 @@ export function Position({
   const cur = asset.currency
   const isDebt = asset.kind === 'debt'
   const loan = asset.metrics.loan
+  const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
+
+  const [history, setHistory] = useState<AssetHistory | null>(null)
+  useEffect(() => {
+    if (showValueChart) void getAssetHistory(asset.id).then(setHistory)
+  }, [asset.id, showValueChart])
 
   return (
     <div className="pad-screen with-back">
@@ -54,6 +64,12 @@ export function Position({
         </>
       ) : (
         <>
+          {showValueChart && history && (
+            <div className="chart-card">
+              <div className="chart-title">Стоимость по месяцам</div>
+              <AreaChart values={history.points.map((p) => p.value)} />
+            </div>
+          )}
           <div className="stat">
             {asset.invested > 0 && <Row k="Вложил" v={money(asset.invested, cur)} />}
             <Row k="Стоит сейчас" v={money(asset.value, cur)} />

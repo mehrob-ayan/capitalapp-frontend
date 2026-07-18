@@ -1,7 +1,9 @@
 // Backend client. Stores the session token in localStorage so a reload inside
 // Telegram (or the browser) stays logged in.
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+// Empty = same origin (backend serves the built frontend). Dev sets an absolute
+// URL via .env so the Vite dev server can reach the Go API on another port.
+const API_URL = import.meta.env.VITE_API_URL ?? ''
 const TOKEN_KEY = 'capital_token'
 
 let token: string | null = localStorage.getItem(TOKEN_KEY)

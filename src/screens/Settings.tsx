@@ -21,10 +21,16 @@ export function Settings({
   const [autoOn, setAutoOn] = useState<boolean | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Stored rate is "value of 1 unit in USD"; we show/enter the friendlier
+  // "how many <currency> for $1" (= 1 / stored).
   function loadRatesDraft() {
     void getRates().then((r) => {
       const d: Record<string, string> = {}
-      for (const c of EDITABLE) d[c] = String(r[c] ?? '')
+      for (const c of EDITABLE) {
+        const perUSD = r[c] ?? 0
+        const perDollar = perUSD > 0 ? 1 / perUSD : 0
+        d[c] = perDollar ? String(c === 'UZS' ? Math.round(perDollar) : Math.round(perDollar * 100) / 100) : ''
+      }
       setDraft(d)
     })
   }
@@ -53,8 +59,8 @@ export function Settings({
     setSaved(false)
     const map: Record<string, number> = {}
     for (const c of EDITABLE) {
-      const n = parseFloat(draft[c])
-      if (Number.isFinite(n) && n > 0) map[c] = n
+      const perDollar = parseFloat(draft[c]) // how many <currency> for $1
+      if (Number.isFinite(perDollar) && perDollar > 0) map[c] = 1 / perDollar
     }
     try {
       await setRates(map)
@@ -120,19 +126,19 @@ export function Settings({
         </div>
       </div>
 
-      <label className="section-lbl">Курсы к доллару</label>
+      <label className="section-lbl">Курс: сколько за 1 доллар</label>
       {!draft && <p className="muted">Загрузка…</p>}
       {draft &&
         EDITABLE.map((c) => (
           <div className="rate-row" key={c}>
             <div className="rate-l">
-              1 {c}
-              <small>{symbol(c)} → доллар США</small>
+              1 доллар в {c === 'TJS' ? 'сомони' : 'сумах'}
+              <small>сколько {symbol(c)} за $1</small>
             </div>
             <input
               className="rate-v"
               type="number"
-              step="0.0001"
+              step={c === 'UZS' ? '1' : '0.01'}
               inputMode="decimal"
               value={draft[c]}
               onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}

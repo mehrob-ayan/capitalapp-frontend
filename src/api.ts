@@ -165,6 +165,10 @@ export interface GoalInput {
   currency: string
   monthlyContribution: number
 }
+export const exportData = () => request<unknown>('/api/v1/export')
+export const importData = (payload: unknown) =>
+  request<{ status: string }>('/api/v1/import', { method: 'POST', body: JSON.stringify(payload) })
+
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })
 export const updateGoal = (id: number, g: GoalInput) => request<Goal>(`/api/v1/goals/${id}`, { method: 'PATCH', body: JSON.stringify(g) })

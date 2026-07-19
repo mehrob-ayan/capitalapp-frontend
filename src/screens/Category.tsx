@@ -66,7 +66,7 @@ function itemSub(a: Asset): string {
   if (a.currency) parts.push(a.currency)
   if (a.kind === 'investment' && a.subtype) parts.push(SUBTYPE_LABEL[a.subtype] ?? a.subtype)
   if (a.kind === 'deposit' && a.ratePercent) parts.push(`${a.ratePercent}% годовых`)
-  if ((a.kind === 'investment' || a.kind === 'realestate' || a.kind === 'car') && a.invested > 0) {
+  if ((a.kind === 'investment' || a.kind === 'realestate' || a.kind === 'car' || a.kind === 'metals') && a.invested > 0) {
     parts.push(`${percent(a.metrics.profitPercent)}`)
   }
   if (a.kind === 'debt') parts.push(a.ratePercent > 0 ? `${a.ratePercent}% годовых` : 'без %')

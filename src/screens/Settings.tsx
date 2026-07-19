@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../kinds'
-import { getRates, setRates } from '../api'
+import { getRates, setRates, exportData, importData } from '../api'
 import { symbol } from '../format'
 
 const EDITABLE = ['TJS', 'UZS'] as const
@@ -17,6 +17,8 @@ export function Settings({
   const [draft, setDraft] = useState<Record<string, string> | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     void getRates().then((r) => {
@@ -41,6 +43,46 @@ export function Settings({
       onRatesSaved()
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function doExport() {
+    setBusy(true)
+    try {
+      const data = await exportData()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `capital-backup-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file later
+    if (!file) return
+    let payload: unknown
+    try {
+      payload = JSON.parse(await file.text())
+    } catch {
+      alert('Не удалось прочитать файл — это не похоже на резервную копию.')
+      return
+    }
+    if (!window.confirm('Импорт ЗАМЕНИТ все текущие данные этой копией. Продолжить?')) return
+    setBusy(true)
+    try {
+      await importData(payload)
+      alert('Данные импортированы.')
+      onRatesSaved()
+    } catch {
+      alert('Импорт не удался.')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -94,6 +136,14 @@ export function Settings({
         <span className="soon">Скоро</span>
       </div>
       <p className="note">Пока курсы задаются вручную — приложение не зависит от внешних сервисов.</p>
+
+      <label className="section-lbl">Данные</label>
+      <div className="data-actions">
+        <button className="cbtn-sec" disabled={busy} onClick={doExport}>Экспорт в файл</button>
+        <button className="cbtn-sec" disabled={busy} onClick={() => fileRef.current?.click()}>Импорт из файла</button>
+        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={onImportFile} />
+      </div>
+      <p className="note">Экспорт — резервная копия всех активов, долгов, курсов и целей в один файл. Импорт заменит текущие данные содержимым файла.</p>
     </div>
   )
 }

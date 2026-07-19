@@ -2,7 +2,7 @@
 // progressive form fields shown when adding/editing each kind. Jargon
 // (subtype, loan type) lives only on the kinds that need it.
 
-export type Kind = 'realestate' | 'car' | 'deposit' | 'cash' | 'investment' | 'debt'
+export type Kind = 'realestate' | 'car' | 'deposit' | 'cash' | 'metals' | 'investment' | 'debt'
 
 export interface KindMeta {
   label: string
@@ -17,6 +17,7 @@ export const KIND_META: Record<Kind, KindMeta> = {
   car: { label: 'Транспорт', example: 'машина, мотоцикл', letter: 'Т', color: '#B5793A' },
   deposit: { label: 'Вклад', example: 'вклад, накопительный счёт', letter: 'В', color: '#7FB39C' },
   cash: { label: 'Наличные и счета', example: 'кэш, карта, счёт', letter: 'Н', color: '#C6A254' },
+  metals: { label: 'Металлы', example: 'золото, серебро, монеты', letter: 'М', color: '#CDA434' },
   investment: { label: 'Инвестиции', example: 'акции, облигации, фонды', letter: 'И', color: '#3E8C79' },
   debt: { label: 'Кредит или долг', example: 'кредит, рассрочка, ипотека', letter: 'К', color: '#BF5030', isLiability: true },
 }
@@ -27,7 +28,7 @@ export function kindColor(kind: string): string {
 
 // Chooser groups: common categories first, investing separated out so the
 // typical user (deposit / car / mortgage) never meets stock jargon by default.
-export const CHOOSER_PRIMARY: Kind[] = ['realestate', 'car', 'deposit', 'cash', 'debt']
+export const CHOOSER_PRIMARY: Kind[] = ['realestate', 'car', 'deposit', 'cash', 'metals', 'debt']
 export const CHOOSER_ADVANCED: Kind[] = ['investment']
 
 export type Field =
@@ -65,6 +66,12 @@ export const FORM_FIELDS: Record<Kind, Field[]> = {
   cash: [
     { key: 'name', type: 'text', label: 'Название', placeholder: 'Напр. текущий счёт' },
     { key: 'value', type: 'money', label: 'Сумма' },
+  ],
+  metals: [
+    { key: 'name', type: 'text', label: 'Название', placeholder: 'Напр. золото, монеты' },
+    { key: 'value', type: 'money', label: 'Стоит сейчас' },
+    { key: 'invested', type: 'money', label: 'Вложил', hint: 'для расчёта прибыли' },
+    { key: 'purchaseDate', type: 'month', label: 'Дата покупки', hint: 'для доходности' },
   ],
   investment: [
     { key: 'name', type: 'text', label: 'Название', placeholder: 'Напр. Apple, фонд на S&P 500' },

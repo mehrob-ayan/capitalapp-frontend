@@ -5,7 +5,7 @@ import { money, percent, monthYear, duration } from '../format'
 import { TopBar } from '../components/TopBar'
 import { AreaChart } from '../components/AreaChart'
 
-const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment'])
+const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment', 'metals'])
 
 const SUBTYPE_LABEL: Record<string, string> = { stock: 'Акции', bond: 'Облигации', fund: 'Фонд' }
 

@@ -18,6 +18,18 @@ import { TopBar } from './components/TopBar'
 
 type Route = { name: Tab } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
+// Persist the current screen so a page refresh doesn't jump back to Overview.
+const ROUTE_KEY = 'capital_route'
+function loadRoute(): Route {
+  try {
+    const r = JSON.parse(localStorage.getItem(ROUTE_KEY) ?? 'null')
+    if (r && typeof r.name === 'string') return r as Route
+  } catch {
+    /* ignore */
+  }
+  return { name: 'home' }
+}
+
 interface Data {
   user: User
   overview: Overview
@@ -28,9 +40,13 @@ export default function App() {
   const [phase, setPhase] = useState<'loading' | 'error' | 'ready'>('loading')
   const [error, setError] = useState('')
   const [data, setData] = useState<Data | null>(null)
-  const [route, setRoute] = useState<Route>({ name: 'home' })
+  const [route, setRoute] = useState<Route>(loadRoute)
   const [chooser, setChooser] = useState(false)
   const [form, setForm] = useState<{ kind: Kind; existing?: Asset } | null>(null)
+
+  useEffect(() => {
+    localStorage.setItem(ROUTE_KEY, JSON.stringify(route))
+  }, [route])
 
   const reload = useCallback(async () => {
     const [overview, assets, user] = await Promise.all([getOverview(), getAssets(), getMe()])

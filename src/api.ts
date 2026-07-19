@@ -14,6 +14,7 @@ export interface User {
   firstName?: string
   username?: string
   baseCurrency: string
+  autoRates?: boolean
 }
 
 export interface LoanState {
@@ -118,6 +119,8 @@ export async function authTelegram(initData: string): Promise<{ token: string; u
 export const getMe = () => request<User>('/api/v1/me')
 export const setBaseCurrency = (baseCurrency: string) =>
   request<User>('/api/v1/me', { method: 'PATCH', body: JSON.stringify({ baseCurrency }) })
+export const setAutoRates = (autoRates: boolean) =>
+  request<User>('/api/v1/me', { method: 'PATCH', body: JSON.stringify({ autoRates }) })
 
 export const getOverview = () => request<Overview>('/api/v1/overview')
 export const getAssets = () => request<Asset[]>('/api/v1/assets')

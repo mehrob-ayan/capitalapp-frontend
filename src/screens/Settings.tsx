@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../kinds'
-import { getRates, setRates, exportData, importData } from '../api'
+import { getRates, setRates, exportData, importData, getMe, setAutoRates } from '../api'
 import { symbol } from '../format'
 
 const EDITABLE = ['TJS', 'UZS'] as const
@@ -18,15 +18,34 @@ export function Settings({
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [autoOn, setAutoOn] = useState<boolean | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
+  function loadRatesDraft() {
     void getRates().then((r) => {
       const d: Record<string, string> = {}
       for (const c of EDITABLE) d[c] = String(r[c] ?? '')
       setDraft(d)
     })
+  }
+
+  useEffect(() => {
+    loadRatesDraft()
+    void getMe().then((u) => setAutoOn(u.autoRates ?? false))
   }, [])
+
+  async function toggleAuto() {
+    if (autoOn === null) return
+    setBusy(true)
+    try {
+      const u = await setAutoRates(!autoOn)
+      setAutoOn(u.autoRates ?? false)
+      loadRatesDraft() // reflect freshly fetched rates
+      onRatesSaved()
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function save() {
     if (!draft) return
@@ -131,11 +150,21 @@ export function Settings({
       <div className="soon-row">
         <div className="rate-l">
           Обновлять автоматически
-          <small>курсы с биржи</small>
+          <small>курс с биржи раз в день</small>
         </div>
-        <span className="soon">Скоро</span>
+        <button
+          className={`switch ${autoOn ? 'on' : ''}`}
+          onClick={toggleAuto}
+          disabled={busy || autoOn === null}
+          aria-pressed={!!autoOn}
+          aria-label="Автообновление курсов"
+        />
       </div>
-      <p className="note">Пока курсы задаются вручную — приложение не зависит от внешних сервисов.</p>
+      <p className="note">
+        {autoOn
+          ? 'Курс обновляется раз в день с биржи. Можно поправить вручную в любой момент.'
+          : 'Включи, чтобы курс подтягивался автоматически. Выключено — курс задаёшь сам.'}
+      </p>
 
       <label className="section-lbl">Данные</label>
       <div className="data-actions">

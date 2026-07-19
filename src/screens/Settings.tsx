@@ -9,10 +9,12 @@ export function Settings({
   baseCurrency,
   onChangeCurrency,
   onRatesSaved,
+  onOpenGoals,
 }: {
   baseCurrency: string
   onChangeCurrency: (c: string) => void
   onRatesSaved: () => void
+  onOpenGoals: () => void
 }) {
   const [draft, setDraft] = useState<Record<string, string> | null>(null)
   const [saving, setSaving] = useState(false)
@@ -114,6 +116,11 @@ export function Settings({
   return (
     <div className="pad-screen">
       <div className="topbar">Ещё</div>
+
+      <button className="nav-row" onClick={onOpenGoals}>
+        <span>🎯 Цели по капиталу</span>
+        <span className="chev">›</span>
+      </button>
 
       <div className="fld">
         <label>Итог показывать в</label>

@@ -13,10 +13,11 @@ import { AssetForm } from './screens/AssetForm'
 import { Settings } from './screens/Settings'
 import { HistoryScreen } from './screens/HistoryScreen'
 import { Goals } from './screens/Goals'
+import { Expenses } from './screens/Expenses'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 
-type Route = { name: Tab } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
+type Route = { name: Tab } | { name: 'goals' } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
 // Persist the current screen so a page refresh doesn't jump back to Overview.
 const ROUTE_KEY = 'capital_route'
@@ -66,7 +67,7 @@ export default function App() {
     })()
   }, [reload])
 
-  const isTopLevel = route.name === 'home' || route.name === 'history' || route.name === 'goals' || route.name === 'more'
+  const isTopLevel = route.name === 'home' || route.name === 'expenses' || route.name === 'history' || route.name === 'more'
 
   const back = useCallback(() => {
     if (form) return setForm(null)
@@ -76,6 +77,7 @@ export default function App() {
       return setRoute(a ? { name: 'category', kind: a.kind as Kind } : { name: 'home' })
     }
     if (route.name === 'category') return setRoute({ name: 'home' })
+    if (route.name === 'goals') return setRoute({ name: 'more' })
   }, [form, chooser, route, data])
 
   useEffect(() => {
@@ -136,14 +138,16 @@ export default function App() {
 
       {route.name === 'position' && <PositionRoute data={data} id={route.id} onBack={back} onEdit={(a) => setForm({ kind: a.kind as Kind, existing: a })} onDelete={removeAsset} />}
 
+      {route.name === 'expenses' && <Expenses />}
       {route.name === 'history' && <HistoryScreen />}
-      {route.name === 'goals' && <Goals />}
+      {route.name === 'goals' && <Goals onBack={back} />}
 
       {route.name === 'more' && (
         <Settings
           baseCurrency={data.overview.baseCurrency}
           onChangeCurrency={changeCurrency}
           onRatesSaved={() => void reload()}
+          onOpenGoals={() => setRoute({ name: 'goals' })}
         />
       )}
 

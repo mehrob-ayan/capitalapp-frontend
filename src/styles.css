@@ -187,6 +187,27 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .switch.on::after { transform: translateX(20px); }
 .switch:disabled { opacity: 0.6; }
 .data-actions { display: flex; gap: 10px; }
+
+/* ---- expenses module ---- */
+.nav-row { display: flex; align-items: center; justify-content: space-between; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 13px; font-size: 14px; font-weight: 600; color: var(--text); cursor: pointer; margin-bottom: 16px; }
+.month-nav { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 12px; }
+.month-nav button { background: var(--card-2); border: 1px solid var(--line); width: 32px; height: 32px; border-radius: 9px; font-size: 18px; color: var(--text); cursor: pointer; }
+.month-nav span { font-size: 15px; font-weight: 600; min-width: 130px; text-align: center; text-transform: capitalize; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.chips button { background: var(--card-2); border: 1px solid var(--line); color: var(--muted); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.chips button.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.exp-totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+.exp-totals > div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 8px; text-align: center; }
+.exp-totals .k { display: block; font-size: 11px; color: var(--muted); font-weight: 600; }
+.exp-totals .v { display: block; font-family: var(--sheet); font-size: 15px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.donut-wrap { display: flex; justify-content: center; margin: 6px 0 10px; }
+.donut-total { font-family: var(--sheet); font-size: 17px; font-weight: 600; fill: var(--text); }
+.donut-cap { font-size: 8.5px; fill: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.exp-legend { justify-content: center; margin-bottom: 6px; }
+.cat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.cat-btn { background: var(--card-2); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 11px 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
+.cat-btn.on { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.emptycat { padding: 14px; color: var(--muted); font-size: 12.5px; text-align: center; }
 .cbtn-sec { flex: 1; background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .cbtn-sec:disabled { opacity: 0.6; }
 

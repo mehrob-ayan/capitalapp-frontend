@@ -175,6 +175,46 @@ export const exportData = () => request<unknown>('/api/v1/export')
 export const importData = (payload: unknown) =>
   request<{ status: string }>('/api/v1/import', { method: 'POST', body: JSON.stringify(payload) })
 
+export interface CategorySlice { category: string; amount: number; percent: number }
+export interface Transaction {
+  id: number
+  date: string
+  type: string
+  category: string
+  amount: number
+  currency: string
+  person: string
+  note?: string
+  source: string
+  createdAt: string
+}
+export interface Expenses {
+  month: string
+  currency: string
+  income: number
+  expense: number
+  balance: number
+  byCategory: CategorySlice[]
+  people: string[]
+  transactions: Transaction[]
+}
+export interface ExpenseInput {
+  type: string
+  category: string
+  amount: number
+  currency: string
+  person?: string
+  note?: string
+}
+export const getExpenses = (month: string, person?: string) =>
+  request<Expenses>(`/api/v1/expenses?month=${month}${person ? `&person=${encodeURIComponent(person)}` : ''}`)
+export const createExpenseTx = (input: ExpenseInput) =>
+  request<Transaction>('/api/v1/expenses', { method: 'POST', body: JSON.stringify(input) })
+export const deleteExpenseTx = (id: number) =>
+  request<void>(`/api/v1/expenses/${id}`, { method: 'DELETE' })
+export const getExpenseCategories = () =>
+  request<{ expense: string[]; income: string[] }>('/api/v1/expenses/categories')
+
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })
 export const updateGoal = (id: number, g: GoalInput) => request<Goal>(`/api/v1/goals/${id}`, { method: 'PATCH', body: JSON.stringify(g) })

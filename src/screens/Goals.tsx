@@ -3,8 +3,9 @@ import { getGoals, type Goal } from '../api'
 import { money, duration } from '../format'
 import { Ring } from '../components/Ring'
 import { GoalForm } from './GoalForm'
+import { TopBar } from '../components/TopBar'
 
-export function Goals() {
+export function Goals({ onBack }: { onBack?: () => void }) {
   const [goals, setGoals] = useState<Goal[] | null>(null)
   const [form, setForm] = useState<{ existing?: Goal } | null>(null)
 
@@ -12,8 +13,8 @@ export function Goals() {
   useEffect(load, [])
 
   return (
-    <div className="pad-screen">
-      <div className="topbar">Цели</div>
+    <div className="pad-screen with-back">
+      {onBack ? <TopBar title="Цели" onBack={onBack} /> : <div className="topbar">Цели</div>}
 
       {!goals && <p className="muted">Загрузка…</p>}
 

@@ -1,4 +1,4 @@
-export type Tab = 'home' | 'history' | 'goals' | 'more'
+export type Tab = 'home' | 'expenses' | 'history' | 'more'
 
 const ICONS = {
   home: (
@@ -6,14 +6,14 @@ const ICONS = {
       <path d="M4 11l8-6 8 6" /><path d="M6 10v9h12v-9" />
     </svg>
   ),
+  expenses: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /><circle cx="16.5" cy="14" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  ),
   history: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 5v14h16" /><path d="M7 14l4-5 3 3 5-7" />
-    </svg>
-  ),
-  goals: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="3.4" />
     </svg>
   ),
   more: (
@@ -23,18 +23,18 @@ const ICONS = {
   ),
 } satisfies Record<Tab, unknown>
 
-const LABELS: Record<Tab, string> = { home: 'Обзор', history: 'История', goals: 'Цели', more: 'Ещё' }
-const ORDER: Tab[] = ['home', 'history', 'goals', 'more']
+const LABELS: Record<Tab, string> = { home: 'Обзор', expenses: 'Расходы', history: 'История', more: 'Ещё' }
 
 export function BottomNav({ active, onTab, onAdd }: { active: Tab; onTab: (t: Tab) => void; onAdd: () => void }) {
+  const tab = (t: Tab) => (
+    <button className={`tab ${active === t ? 'on' : ''}`} onClick={() => onTab(t)}>
+      {ICONS[t]}<span>{LABELS[t]}</span>
+    </button>
+  )
   return (
     <nav className="tabbar">
-      <button className={`tab ${active === 'home' ? 'on' : ''}`} onClick={() => onTab('home')}>
-        {ICONS.home}<span>{LABELS.home}</span>
-      </button>
-      <button className={`tab ${active === 'history' ? 'on' : ''}`} onClick={() => onTab('history')}>
-        {ICONS.history}<span>{LABELS.history}</span>
-      </button>
+      {tab('home')}
+      {tab('expenses')}
       <button className="tab-add" onClick={onAdd} aria-label="Добавить">
         <span className="tab-add-b">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
@@ -42,11 +42,8 @@ export function BottomNav({ active, onTab, onAdd }: { active: Tab; onTab: (t: Ta
           </svg>
         </span>
       </button>
-      {ORDER.slice(2).map((t) => (
-        <button key={t} className={`tab ${active === t ? 'on' : ''}`} onClick={() => onTab(t)}>
-          {ICONS[t]}<span>{LABELS[t]}</span>
-        </button>
-      ))}
+      {tab('history')}
+      {tab('more')}
     </nav>
   )
 }

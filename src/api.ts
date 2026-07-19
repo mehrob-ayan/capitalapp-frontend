@@ -33,6 +33,7 @@ export interface AssetMetrics {
   liabilityBase: number
   monthlyFlowBase: number
   profit: number
+  profitBase: number
   profitPercent: number
   cashYieldPercent: number
   cagrPercent: number

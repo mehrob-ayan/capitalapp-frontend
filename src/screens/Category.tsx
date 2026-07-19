@@ -24,7 +24,7 @@ export function Category({
   const items = assets.filter((a) => a.kind === kind)
   const isLiability = meta.isLiability ?? false
   const subtotal = items.reduce((s, a) => s + (isLiability ? a.metrics.liabilityBase : a.metrics.valueBase), 0)
-  const totalProfit = items.reduce((s, a) => s + a.metrics.profit, 0)
+  const totalProfit = items.reduce((s, a) => s + a.metrics.profitBase, 0)
 
   return (
     <div className="pad-screen with-back">

@@ -70,5 +70,6 @@ function itemSub(a: Asset): string {
     parts.push(`${percent(a.metrics.profitPercent)}`)
   }
   if (a.kind === 'debt') parts.push(a.ratePercent > 0 ? `${a.ratePercent}% годовых` : 'без %')
+  if (a.excludeFromNetWorth) parts.push('вне капитала')
   return parts.join(' · ')
 }

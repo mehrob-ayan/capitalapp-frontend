@@ -55,6 +55,7 @@ export interface Asset {
   maintenanceHours: number
   subtype?: string
   status?: string
+  excludeFromNetWorth?: boolean
   debtScheme?: string
   loanType?: string
   termMonths?: number
@@ -76,6 +77,7 @@ export interface AssetInput {
   maintenanceHours: number
   subtype?: string
   status?: string
+  excludeFromNetWorth?: boolean
   debtScheme?: string
   loanType?: string
   termMonths?: number

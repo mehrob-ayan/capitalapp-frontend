@@ -85,6 +85,10 @@ export function Position({
         </>
       )}
 
+      {asset.excludeFromNetWorth && (
+        <p className="note">Не входит в чистый капитал — учитывается только в своём разделе.</p>
+      )}
+
       <button className="mainbtn" onClick={onEdit}>Изменить</button>
       <button className="linkbtn danger" onClick={onDelete}>Удалить</button>
     </div>

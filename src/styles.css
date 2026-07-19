@@ -1,6 +1,8 @@
 :root {
-  --sheet: 'Georgia', 'Times New Roman', serif;
-  --ui: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Modern system stack (San Francisco on Apple, Segoe/Roboto elsewhere).
+     --display is used for large figures/headings, --ui for the interface. */
+  --sheet: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --ui: -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, sans-serif;
 
   /* Fallbacks; theme.ts overrides these from the Telegram theme at runtime. */
   --page: #eef0f3;
@@ -46,7 +48,7 @@ input { font-family: inherit; }
 
 /* ---- headline block ---- */
 .eyebrow { text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px; font-weight: 700; color: var(--muted); }
-.hero { font-family: var(--sheet); font-size: 46px; line-height: 1; margin-top: 8px; color: var(--brand); font-variant-numeric: tabular-nums; }
+.hero { font-family: var(--sheet); font-size: 46px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; margin-top: 8px; color: var(--brand); font-variant-numeric: tabular-nums; }
 .hero.small { font-size: 34px; }
 .hero.neg { color: var(--neg); }
 .rule { height: 2px; width: 42px; background: var(--gold); border-radius: 2px; margin: 13px 0 16px; }
@@ -187,6 +189,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .chart-svg { display: block; width: 100%; height: auto; }
 .chart-empty { color: var(--muted); font-size: 12.5px; line-height: 1.5; padding: 14px 6px; text-align: center; }
 .chart-title { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+
+/* Modern figures: medium-weight tabular numbers, semibold headings. */
+.card-v, .flow-v, .stat-v, .goal-v, .catrow-sum, .li-a, .li-o { font-weight: 500; }
+.hist-big, h1, .sheet-h { font-weight: 600; letter-spacing: -0.01em; }
 .history-list { margin-top: 8px; }
 .li.static { cursor: default; }
 

@@ -138,7 +138,7 @@ export const getRates = () => request<Record<string, number>>('/api/v1/rates')
 export const setRates = (rates: Record<string, number>) =>
   request<Record<string, number>>('/api/v1/rates', { method: 'PATCH', body: JSON.stringify({ rates }) })
 
-export interface HistoryPoint { date: string; netWorth: number }
+export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number }
 export interface History {
   baseCurrency: string
   points: HistoryPoint[]

@@ -15,6 +15,8 @@ export interface User {
   username?: string
   baseCurrency: string
   autoRates?: boolean
+  monthlyIncome?: number
+  incomeCurrency?: string
 }
 
 export interface LoanState {
@@ -30,6 +32,7 @@ export interface LoanState {
 
 export interface AssetMetrics {
   valueBase: number
+  accruedValue: number
   liabilityBase: number
   monthlyFlowBase: number
   profit: number
@@ -105,6 +108,8 @@ export interface Overview {
   assets: number
   liabilities: number
   monthlyFlow: number
+  options: number
+  optionsVested: number
   composition: CompositionSlice[]
   categories: CategorySummary[]
 }
@@ -145,8 +150,34 @@ export interface History {
   current: number
   changeAbs: number
   changePercent: number
+  dailyInterest: number
 }
-export const getHistory = (period: string) => request<History>(`/api/v1/history?period=${period}`)
+export const getHistory = (period: string, currency?: string) =>
+  request<History>(`/api/v1/history?period=${period}${currency ? `&currency=${currency}` : ''}`)
+
+export const setIncome = (monthlyIncome: number, incomeCurrency: string) =>
+  request<User>('/api/v1/me', { method: 'PATCH', body: JSON.stringify({ monthlyIncome, incomeCurrency }) })
+
+export interface Efficiency {
+  baseCurrency: string
+  hasIncome: boolean
+  monthlyIncome: number
+  monthExpenses: number
+  capitalGrowth: number
+  capitalShare: number
+  savingsRate: number | null
+}
+export const getEfficiency = () => request<Efficiency>('/api/v1/efficiency')
+
+export interface CompositionPoint { date: string; parts: Record<string, number> }
+export interface Composition { baseCurrency: string; kinds: string[]; points: CompositionPoint[] }
+export const getComposition = (period: string) =>
+  request<Composition>(`/api/v1/history/composition?period=${period}`)
+
+export const patchSnapshot = (date: string, netWorth: number) =>
+  request<void>(`/api/v1/history/${date}`, { method: 'PATCH', body: JSON.stringify({ netWorth }) })
+export const deleteSnapshot = (date: string) =>
+  request<void>(`/api/v1/history/${date}`, { method: 'DELETE' })
 
 export interface AssetHistory {
   currency: string
@@ -176,6 +207,7 @@ export const importData = (payload: unknown) =>
   request<{ status: string }>('/api/v1/import', { method: 'POST', body: JSON.stringify(payload) })
 
 export interface CategorySlice { category: string; amount: number; percent: number }
+export interface MonthTrend { month: string; income: number; expense: number }
 export interface Transaction {
   id: number
   date: string
@@ -195,6 +227,7 @@ export interface Expenses {
   expense: number
   balance: number
   byCategory: CategorySlice[]
+  trend: MonthTrend[]
   people: string[]
   transactions: Transaction[]
 }
@@ -214,6 +247,61 @@ export const deleteExpenseTx = (id: number) =>
   request<void>(`/api/v1/expenses/${id}`, { method: 'DELETE' })
 export const getExpenseCategories = () =>
   request<{ expense: string[]; income: string[] }>('/api/v1/expenses/categories')
+
+export interface Activity {
+  id: number
+  createdAt: string
+  kind: string
+  title: string
+  detail: string
+  amount: number
+  currency: string
+  netBefore: number
+  netAfter: number
+  changeAbs: number
+}
+export interface ActivityList {
+  baseCurrency: string
+  items: Activity[]
+}
+export const getActivity = () => request<ActivityList>('/api/v1/activity')
+
+export type OptionStatus = 'pending' | 'vesting' | 'vested'
+export interface OptionGrant {
+  id: number
+  name: string
+  quantity: number
+  unitPrice: number
+  currency: string
+  grantDate: string
+  vestMonths: number
+  status: OptionStatus
+  vestDate: string
+  valueBase: number
+}
+export interface OptionsList {
+  baseCurrency: string
+  grants: OptionGrant[]
+  vestedBase: number
+  vestingBase: number
+  pendingBase: number
+  totalBase: number
+}
+export interface OptionInput {
+  name: string
+  quantity: number
+  unitPrice: number
+  currency: string
+  grantDate: string
+  vestMonths: number
+}
+export const getOptions = () => request<OptionsList>('/api/v1/options')
+export const createOption = (o: OptionInput) =>
+  request<OptionGrant>('/api/v1/options', { method: 'POST', body: JSON.stringify(o) })
+export const updateOption = (id: number, o: OptionInput) =>
+  request<OptionGrant>(`/api/v1/options/${id}`, { method: 'PATCH', body: JSON.stringify(o) })
+export const deleteOption = (id: number) =>
+  request<void>(`/api/v1/options/${id}`, { method: 'DELETE' })
 
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })

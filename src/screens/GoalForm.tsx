@@ -14,7 +14,7 @@ export function GoalForm({
   onSaved: () => void
 }) {
   const [title, setTitle] = useState(existing?.title ?? '')
-  const [currency, setCurrency] = useState(existing?.currency ?? 'RUB')
+  const [currency, setCurrency] = useState(existing?.currency ?? 'USD')
   const [target, setTarget] = useState(existing ? String(existing.targetAmount) : '')
   const [monthly, setMonthly] = useState(existing?.monthlyContribution ? String(existing.monthlyContribution) : '')
   const [busy, setBusy] = useState(false)

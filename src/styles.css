@@ -67,6 +67,18 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 
 /* ---- splits / flow ---- */
 .splits { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.row-between { display: flex; align-items: center; justify-content: space-between; }
+.icon-btn { background: var(--card); border: 1px solid var(--line); border-radius: 10px; width: 34px; height: 34px; font-size: 16px; cursor: pointer; display: grid; place-items: center; }
+
+.opt-card { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 13px; margin-top: 8px; cursor: pointer; }
+.opt-card-top { display: flex; align-items: center; gap: 9px; }
+.opt-card-mark { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.opt-card-name { flex: 1; font-size: 13.5px; font-weight: 600; }
+.opt-card-params { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.opt-card-params .k { display: block; font-size: 11px; color: var(--muted); }
+.opt-card-params .v { display: block; font-family: var(--sheet); font-size: 17px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.opt-card-cap { font-size: 11px; color: var(--muted); margin-top: 8px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 13px; }
 .card-k { font-size: 11px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
@@ -101,6 +113,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .li-main { flex: 1; min-width: 0; }
 .li-name { font-size: 13.5px; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .li-sub { font-size: 11px; color: var(--muted); display: block; margin-top: 2px; }
+.li-chg { font-size: 12.5px; color: var(--text); display: block; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.act-delta { font-weight: 700 !important; font-size: 16px; }
+.ring-row { display: flex; align-items: center; gap: 16px; margin: 6px 0 12px; }
+.ring-row small { display: block; margin-top: 2px; }
 .li-amt { text-align: right; flex-shrink: 0; }
 .li-a { font-family: var(--sheet); font-size: 15px; display: block; font-variant-numeric: tabular-nums; }
 .li-o { font-size: 10.5px; color: var(--muted); opacity: 0.8; font-variant-numeric: tabular-nums; }

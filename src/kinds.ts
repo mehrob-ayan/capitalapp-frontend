@@ -23,6 +23,7 @@ export const KIND_META: Record<Kind, KindMeta> = {
 }
 
 export function kindColor(kind: string): string {
+  if (kind === 'options') return '#7A6FF0' // options aren't an asset kind, but appear in composition
   return (KIND_META as Record<string, KindMeta>)[kind]?.color ?? '#8A99A8'
 }
 

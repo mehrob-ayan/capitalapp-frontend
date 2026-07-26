@@ -5,10 +5,14 @@ import { money, signedMoney } from '../format'
 export function Dashboard({
   overview,
   onOpenCategory,
+  onOpenOptions,
+  onOpenActivity,
   onChangeCurrency,
 }: {
   overview: Overview
   onOpenCategory: (kind: string) => void
+  onOpenOptions: () => void
+  onOpenActivity: () => void
   onChangeCurrency: (currency: string) => void
 }) {
   const cur = overview.baseCurrency
@@ -17,7 +21,10 @@ export function Dashboard({
 
   return (
     <div className="pad-screen">
-      <div className="topbar">Обзор</div>
+      <div className="topbar row-between">
+        <span>Обзор</span>
+        <button className="icon-btn" onClick={onOpenActivity} aria-label="Действия" title="Действия">🕘</button>
+      </div>
 
       <div className="ccy" role="group" aria-label="Валюта итога">
         {CURRENCIES.map((c) => (
@@ -76,6 +83,21 @@ export function Dashboard({
           <span className="chev">›</span>
         </button>
       ))}
+
+      {overview.options > 0 && (
+        <button className="opt-card" onClick={onOpenOptions}>
+          <div className="opt-card-top">
+            <span className="opt-card-mark" style={{ background: kindColor('options') }} />
+            <span className="opt-card-name">Опционы</span>
+            <span className="chev">›</span>
+          </div>
+          <div className="opt-card-params">
+            <div><span className="k">Общая сумма</span><span className="v">{money(overview.options, cur)}</span></div>
+            <div><span className="k">Уже мои</span><span className="v pos">{money(overview.optionsVested, cur)}</span></div>
+          </div>
+          <div className="opt-card-cap">Ещё зреет: {money(overview.options - overview.optionsVested, cur)}</div>
+        </button>
+      )}
 
       {empty && (
         <p className="muted empty">

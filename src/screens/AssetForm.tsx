@@ -166,6 +166,9 @@ function initialValues(fields: Field[], existing: Asset | undefined, scheme?: De
     } else if (f.key === 'value' && scheme === 'accruing' && existing?.metrics.loan) {
       // Accruing debt: pre-fill today's grown balance so re-saving keeps interest.
       v[f.key] = String(Math.round(existing.metrics.loan.outstanding))
+    } else if (f.key === 'value' && existing?.kind === 'deposit') {
+      // Deposit: pre-fill today's accrued balance so re-saving keeps interest.
+      v[f.key] = String(Math.round(existing.metrics.accruedValue))
     } else {
       const raw = rec ? rec[f.key] : undefined
       v[f.key] = raw ? String(raw) : ''

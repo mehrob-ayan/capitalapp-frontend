@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../kinds'
 import { getRates, setRates, exportData, importData, getMe, setAutoRates } from '../api'
 import { symbol } from '../format'
+import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../notify'
 
 const EDITABLE = ['TJS', 'UZS'] as const
 
@@ -10,18 +11,36 @@ export function Settings({
   onChangeCurrency,
   onRatesSaved,
   onOpenGoals,
+  onOpenOptions,
+  onOpenActivity,
+  onOpenEfficiency,
 }: {
   baseCurrency: string
   onChangeCurrency: (c: string) => void
   onRatesSaved: () => void
   onOpenGoals: () => void
+  onOpenOptions: () => void
+  onOpenActivity: () => void
+  onOpenEfficiency: () => void
 }) {
   const [draft, setDraft] = useState<Record<string, string> | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [busy, setBusy] = useState(false)
   const [autoOn, setAutoOn] = useState<boolean | null>(null)
+  const [notifyOn, setNotifyOn] = useState(notifyEnabled())
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function toggleNotify() {
+    if (notifyOn) {
+      disableNotify()
+      setNotifyOn(false)
+      return
+    }
+    const ok = await enableNotify()
+    setNotifyOn(ok)
+    if (!ok) alert('Разреши уведомления для этого сайта в настройках браузера.')
+  }
 
   // Stored rate is "value of 1 unit in USD"; we show/enter the friendlier
   // "how many <currency> for $1" (= 1 / stored).
@@ -117,11 +136,23 @@ export function Settings({
     <div className="pad-screen">
       <div className="topbar">Ещё</div>
 
+      <label className="section-lbl">Капитал</label>
       <button className="nav-row" onClick={onOpenGoals}>
-        <span>🎯 Цели по капиталу</span>
-        <span className="chev">›</span>
+        <span>🎯 Цели по капиталу</span><span className="chev">›</span>
+      </button>
+      <button className="nav-row" onClick={onOpenOptions}>
+        <span>📈 Опционы</span><span className="chev">›</span>
+      </button>
+      <button className="nav-row" onClick={onOpenEfficiency}>
+        <span>📊 Доход и эффективность</span><span className="chev">›</span>
       </button>
 
+      <label className="section-lbl">Действия</label>
+      <button className="nav-row" onClick={onOpenActivity}>
+        <span>🕘 Действия</span><span className="chev">›</span>
+      </button>
+
+      <label className="section-lbl">Настройки</label>
       <div className="fld">
         <label>Итог показывать в</label>
         <div className="seg">
@@ -178,6 +209,28 @@ export function Settings({
           ? 'Курс обновляется раз в день с биржи. Можно поправить вручную в любой момент.'
           : 'Включи, чтобы курс подтягивался автоматически. Выключено — курс задаёшь сам.'}
       </p>
+
+      {notifySupported() && (
+        <>
+          <div className="soon-row">
+            <div className="rate-l">
+              Уведомления в браузере
+              <small>об изменениях и утреннем пересчёте</small>
+            </div>
+            <button
+              className={`switch ${notifyOn ? 'on' : ''}`}
+              onClick={toggleNotify}
+              aria-pressed={notifyOn}
+              aria-label="Уведомления в браузере"
+            />
+          </div>
+          <p className="note">
+            {notifyOn
+              ? 'Уведомления включены. Приходят, пока приложение открыто (вкладка или установленное PWA).'
+              : 'Включи, чтобы получать уведомление на каждое изменение капитала и утренний пересчёт курса.'}
+          </p>
+        </>
+      )}
 
       <label className="section-lbl">Данные</label>
       <div className="data-actions">

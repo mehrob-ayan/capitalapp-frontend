@@ -6,6 +6,34 @@ import {
 import { money, monthYear, dateShort } from '../format'
 import { Donut, colorFor } from '../components/Donut'
 import { Sheet } from '../components/Sheet'
+import type { MonthTrend } from '../api'
+
+// Grouped income/expense bars for the last months. Shares one scale.
+function TrendBars({ trend }: { trend: MonthTrend[] }) {
+  const W = 300
+  const H = 70
+  const max = Math.max(1, ...trend.map((t) => Math.max(t.income, t.expense)))
+  const n = trend.length
+  const slot = W / n
+  const bw = Math.min(12, slot / 3)
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 12}`} className="chart-svg" role="img" aria-label="Доход и расход по месяцам">
+      {trend.map((t, i) => {
+        const cx = i * slot + slot / 2
+        const ih = (t.income / max) * H
+        const eh = (t.expense / max) * H
+        const mo = t.month.slice(5)
+        return (
+          <g key={t.month}>
+            <rect x={(cx - bw - 1).toFixed(1)} y={(H - ih).toFixed(1)} width={bw} height={ih.toFixed(1)} rx="2" fill="var(--pos)" />
+            <rect x={(cx + 1).toFixed(1)} y={(H - eh).toFixed(1)} width={bw} height={eh.toFixed(1)} rx="2" fill="var(--neg)" />
+            <text x={cx.toFixed(1)} y={H + 10} fontSize="8" textAnchor="middle" fill="var(--muted)">{mo}</text>
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
 
 function currentMonth(): string {
   const d = new Date()
@@ -17,7 +45,7 @@ function shiftMonth(m: string, delta: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
 }
 
-export function Expenses() {
+export function Expenses({ addSignal }: { addSignal?: number }) {
   const [month, setMonth] = useState(currentMonth())
   const [person, setPerson] = useState<string>('')
   const [data, setData] = useState<ExpensesData | null>(null)
@@ -27,6 +55,8 @@ export function Expenses() {
   const load = () => void getExpenses(month, person).then(setData)
   useEffect(load, [month, person])
   useEffect(() => { void getExpenseCategories().then(setCats) }, [])
+  // The bottom-bar "+" opens the quick-add when on this tab (contextual add).
+  useEffect(() => { if (addSignal) setAdding(true) }, [addSignal])
 
   const cur = data?.currency ?? 'UZS'
   const colorByCat = useMemo(() => {
@@ -69,6 +99,17 @@ export function Expenses() {
             <div><span className="k">Расход</span><span className="v neg">{money(data.expense, cur)}</span></div>
             <div><span className="k">Баланс</span><span className={`v ${data.balance >= 0 ? 'pos' : 'neg'}`}>{money(data.balance, cur)}</span></div>
           </div>
+
+          {data.trend.some((t) => t.income > 0 || t.expense > 0) && (
+            <div className="chart-card">
+              <div className="chart-title">Доход и расход по месяцам</div>
+              <TrendBars trend={data.trend} />
+              <div className="clegend" style={{ marginTop: 8 }}>
+                <div><i style={{ background: 'var(--pos)' }} />Доход</div>
+                <div><i style={{ background: 'var(--neg)' }} />Расход</div>
+              </div>
+            </div>
+          )}
 
           {data.byCategory.length > 0 ? (
             <>

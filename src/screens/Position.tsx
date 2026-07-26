@@ -23,8 +23,12 @@ export function Position({
   const meta = KIND_META[(asset.kind as keyof typeof KIND_META)] ?? KIND_META.cash
   const cur = asset.currency
   const isDebt = asset.kind === 'debt'
+  const isDeposit = asset.kind === 'deposit'
   const loan = asset.metrics.loan
   const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
+  // Deposits accrue: the "value now" is the compounded balance, not the entered principal.
+  const accrued = asset.metrics.accruedValue
+  const depositInterest = isDeposit ? accrued - asset.value : 0
 
   const [history, setHistory] = useState<AssetHistory | null>(null)
   useEffect(() => {
@@ -43,10 +47,13 @@ export function Position({
         </span>
       </div>
 
-      <div className="eyebrow">{isDebt ? 'Остаток долга сегодня' : 'Стоит сейчас'}</div>
+      <div className="eyebrow">{isDebt ? 'Остаток долга сегодня' : isDeposit ? 'Сумма сегодня' : 'Стоит сейчас'}</div>
       <div className={`hero small ${isDebt ? 'neg' : ''}`}>
-        {isDebt ? '−' : ''}{money(isDebt && loan ? loan.outstanding : asset.value, cur)}
+        {isDebt ? '−' : ''}{money(isDebt && loan ? loan.outstanding : isDeposit ? accrued : asset.value, cur)}
       </div>
+      {isDeposit && depositInterest > 0 && (
+        <div className="delta pos">▲ капитализация +{money(depositInterest, cur)}</div>
+      )}
       <div className="rule" />
 
       {isDebt && loan ? (
@@ -70,18 +77,32 @@ export function Position({
               <AreaChart values={history.points.map((p) => p.value)} />
             </div>
           )}
-          <div className="stat">
-            {asset.invested > 0 && <Row k="Вложил" v={money(asset.invested, cur)} />}
-            <Row k="Стоит сейчас" v={money(asset.value, cur)} />
-            {asset.invested > 0 && (
-              <Row k="Прибыль" v={`${money(asset.metrics.profit, cur)} · ${percent(asset.metrics.profitPercent)}`} cls={asset.metrics.profit >= 0 ? 'pos' : 'neg'} />
-            )}
-            {asset.monthlyIncome > 0 && <Row k="Приносит в месяц" v={money(asset.monthlyIncome, cur)} />}
-            {asset.metrics.cashYieldPercent > 0 && <Row k="Кешфлоу" v={`${percent(asset.metrics.cashYieldPercent, false)} годовых`} cls="gold" />}
-            {asset.metrics.cagrPercent !== 0 && <Row k="Доходность" v={`${percent(asset.metrics.cagrPercent)} годовых`} cls="pos" />}
-            {asset.maintenanceHours > 0 && <Row k="Обслуживание" v={`~${asset.maintenanceHours} ч/год`} />}
-          </div>
-          <p className="note">Кешфлоу — доход к вложенному. Доходность — рост за год с учётом цены. Считаются сами.</p>
+          {isDeposit ? (
+            <>
+              <div className="stat">
+                <Row k="Тело вклада" v={money(asset.value, cur)} />
+                <Row k="Ставка" v={asset.ratePercent > 0 ? `${asset.ratePercent}% годовых` : 'без процентов'} />
+                {depositInterest > 0 && <Row k="Начислено процентов" v={`+${money(depositInterest, cur)}`} cls="pos" />}
+                {asset.ratePercent > 0 && <Row k="В день" v={`~${money((accrued * asset.ratePercent) / 100 / 365, cur)}`} cls="pos" />}
+              </div>
+              <p className="note">Проценты капают каждый день и уже включены в сумму. Редактирование не сбрасывает накопленное.</p>
+            </>
+          ) : (
+            <>
+              <div className="stat">
+                {asset.invested > 0 && <Row k="Вложил" v={money(asset.invested, cur)} />}
+                <Row k="Стоит сейчас" v={money(asset.value, cur)} />
+                {asset.invested > 0 && (
+                  <Row k="Прибыль" v={`${money(asset.metrics.profit, cur)} · ${percent(asset.metrics.profitPercent)}`} cls={asset.metrics.profit >= 0 ? 'pos' : 'neg'} />
+                )}
+                {asset.monthlyIncome > 0 && <Row k="Приносит в месяц" v={money(asset.monthlyIncome, cur)} />}
+                {asset.metrics.cashYieldPercent > 0 && <Row k="Кешфлоу" v={`${percent(asset.metrics.cashYieldPercent, false)} годовых`} cls="gold" />}
+                {asset.metrics.cagrPercent !== 0 && <Row k="Доходность" v={`${percent(asset.metrics.cagrPercent)} годовых`} cls="pos" />}
+                {asset.maintenanceHours > 0 && <Row k="Обслуживание" v={`~${asset.maintenanceHours} ч/год`} />}
+              </div>
+              <p className="note">Кешфлоу — доход к вложенному. Доходность — рост за год с учётом цены. Считаются сами.</p>
+            </>
+          )}
         </>
       )}
 

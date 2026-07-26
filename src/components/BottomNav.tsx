@@ -23,7 +23,7 @@ const ICONS = {
   ),
 } satisfies Record<Tab, unknown>
 
-const LABELS: Record<Tab, string> = { home: 'Обзор', expenses: 'Расходы', history: 'История', more: 'Ещё' }
+const LABELS: Record<Tab, string> = { home: 'Обзор', expenses: 'Расходы', history: 'Динамика', more: 'Ещё' }
 
 export function BottomNav({ active, onTab, onAdd }: { active: Tab; onTab: (t: Tab) => void; onAdd: () => void }) {
   const tab = (t: Tab) => (

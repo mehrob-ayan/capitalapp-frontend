@@ -204,7 +204,7 @@ function debtNote(a: Asset, outstanding: number, cur: string): string {
     return 'Без процентов — уменьшайте остаток вручную по мере погашения.'
   }
   const perDay = (outstanding * a.ratePercent) / 100 / 365
-  return `Остаток растёт примерно на ${money(perDay, cur)} в день по ставке ${a.ratePercent}%. Внесёте платёж — обновите остаток, и приложение продолжит начисление с новой суммы.`
+  return `Остаток растёт примерно на ${money(perDay, cur)} в день по ставке ${a.ratePercent}%. Нажми «Внести платёж» — приложение само уменьшит остаток и продолжит начисление, вручную обновлять ничего не нужно.`
 }
 
 function badgeLine(a: Asset): string {

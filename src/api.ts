@@ -64,6 +64,7 @@ export interface Asset {
   loanType?: string
   termMonths?: number
   firstPaymentDate?: string
+  payoffDate?: string
   linkedAssetId?: number
   metrics: AssetMetrics
 }
@@ -86,6 +87,7 @@ export interface AssetInput {
   loanType?: string
   termMonths?: number
   firstPaymentDate?: string | null
+  payoffDate?: string | null
 }
 
 export interface CompositionSlice {

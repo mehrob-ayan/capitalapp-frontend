@@ -104,7 +104,12 @@ export const DEBT_SCHEMES: { value: DebtScheme; label: string; desc: string; fie
     value: 'accruing',
     label: 'Растёт каждый день',
     desc: 'Проценты капают ежедневно на остаток, платёж вносите сами',
-    fields: [{ key: 'value', type: 'money', label: 'Остаток долга сейчас' }, RATE_FIELD, PAYMENT_FIELD],
+    fields: [
+      { key: 'value', type: 'money', label: 'Остаток долга сейчас' },
+      RATE_FIELD,
+      PAYMENT_FIELD,
+      { key: 'payoffDate', type: 'month', label: 'Дата закрытия', hint: 'при досрочке платёж пересчитается под срок' },
+    ],
   },
   {
     value: 'annuity',

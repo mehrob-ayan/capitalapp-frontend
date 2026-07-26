@@ -183,6 +183,7 @@ function toInput(kind: Kind, currency: string, values: Record<string, string>, s
     termMonths: Math.round(num('termMonths')),
     purchaseDate: monthOrNull('purchaseDate'),
     firstPaymentDate: monthOrNull('firstPaymentDate'),
+    payoffDate: monthOrNull('payoffDate'),
     subtype: str('subtype') || undefined,
     status: str('status') || undefined,
     debtScheme: scheme,

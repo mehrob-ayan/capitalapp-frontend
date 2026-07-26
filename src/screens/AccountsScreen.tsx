@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  getAccounts, createAccount, getAccountEntries, addAccountEntry, updateAccountEntry, deleteAccountEntry,
+  getAccounts, createAccount, deleteAccount, getAccountEntries, addAccountEntry, updateAccountEntry, deleteAccountEntry,
   type Account, type AccountEntries, type AccountEntry,
 } from '../api'
 import { money, dateShort } from '../format'
@@ -103,6 +103,18 @@ function Ledger({ id, onBack, onChanged }: { id: number; onBack: () => void; onC
             ))}
             {data.entries.length === 0 && <div className="emptycat">Движений нет</div>}
           </div>
+
+          <button
+            className="linkbtn danger"
+            onClick={async () => {
+              if (!window.confirm('Удалить счёт? Все его движения удалятся, а платежи по долгам с него — вернутся долгам.')) return
+              await deleteAccount(id)
+              onChanged?.()
+              onBack()
+            }}
+          >
+            Удалить счёт
+          </button>
         </>
       )}
 

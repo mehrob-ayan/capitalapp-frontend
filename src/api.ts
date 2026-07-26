@@ -320,6 +320,7 @@ export interface EntryInput { kind: 'income' | 'payment'; amount: number; note?:
 export const getAccounts = () => request<Account[]>('/api/v1/accounts')
 export const createAccount = (a: AccountInput) =>
   request<Account>('/api/v1/accounts', { method: 'POST', body: JSON.stringify(a) })
+export const deleteAccount = (id: number) => request<void>(`/api/v1/accounts/${id}`, { method: 'DELETE' })
 export const getAccountEntries = (id: number) => request<AccountEntries>(`/api/v1/accounts/${id}/entries`)
 export const addAccountEntry = (id: number, e: EntryInput) =>
   request<void>(`/api/v1/accounts/${id}/entries`, { method: 'POST', body: JSON.stringify(e) })

@@ -74,10 +74,12 @@ export default function App() {
     })()
   }, [reload])
 
-  // Poll the activity log while the app is open and raise a browser
-  // notification for each new entry — a change, or the morning auto rate-sync.
+  // Poll the activity log while the app is open and notify only about things
+  // that happen WITHOUT you — salary auto-credit and the daily rate sync. Your
+  // own manual actions aren't pushed (you just did them).
   useEffect(() => {
     if (phase !== 'ready') return
+    const AUTO_KINDS = new Set(['salary', 'rate_changed'])
     let stopped = false
     async function poll() {
       if (!notifyEnabled()) return
@@ -87,7 +89,7 @@ export default function App() {
         const newest = items[0].id // API returns newest-first
         const last = getLastSeen()
         if (last === 0) { setLastSeen(newest); return } // baseline: don't spam on first run
-        const fresh = items.filter((a) => a.id > last).reverse()
+        const fresh = items.filter((a) => a.id > last && AUTO_KINDS.has(a.kind)).reverse()
         for (const a of fresh) {
           const chg = a.changeAbs !== 0 ? ` (${signedMoney(a.changeAbs, baseCurrency)})` : ''
           showNotify(a.title, `${a.detail}${chg}`.trim())

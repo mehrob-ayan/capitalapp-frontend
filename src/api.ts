@@ -311,7 +311,7 @@ export const deleteOption = (id: number) =>
 export interface Account { id: number; name: string; currency: string; balance: number; isSalary: boolean }
 export interface AccountEntry {
   id: number; accountId: number; date: string; kind: 'income' | 'payment'
-  amount: number; note: string; source: string; linkedDebtId?: number; createdAt: string
+  amount: number; note: string; source: string; linkedDebtId?: number; debtAmount?: number; createdAt: string
 }
 export interface AccountEntries { account: Account; entries: AccountEntry[] }
 export interface AccountInput { name: string; currency: string; startingBalance: number; isSalary: boolean }

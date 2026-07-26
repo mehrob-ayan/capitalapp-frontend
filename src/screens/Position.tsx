@@ -129,7 +129,7 @@ export function Position({
                   <span className="li-name">{p.note || 'Платёж'}</span>
                   <span className="li-sub">{dateShort(p.date)}</span>
                 </span>
-                <span className="li-amt"><span className="li-a neg">−{money(p.amount, cur)}</span></span>
+                <span className="li-amt"><span className="li-a neg">−{money(p.debtAmount ?? p.amount, cur)}</span></span>
               </div>
             ))}
           </div>

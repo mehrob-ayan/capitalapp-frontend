@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getEfficiency, getMe, setIncome, type Efficiency, type User } from '../api'
+import { getEfficiency, getMe, setIncome, type Efficiency, type EffMonth, type User } from '../api'
 import { money, signedMoney, percent, symbol } from '../format'
 import { CURRENCIES } from '../kinds'
 import { Ring } from '../components/Ring'
@@ -54,8 +54,15 @@ export function EfficiencyScreen({ onBack }: { onBack?: () => void }) {
             )}
           </div>
 
+          {data.trend.length > 0 && (
+            <div className="chart-card">
+              <div className="chart-title">В капитал по месяцам</div>
+              <MonthBars trend={data.trend} />
+            </div>
+          )}
+
           <p className="note">
-            «В капитал из дохода» включает и рост активов, и курс — не только твои сбережения. Норма сбережений (доход − расходы) точнее; она появляется, когда трекаешь расходы через бота.
+            «В капитал из дохода» включает и рост активов, и курс — не только твои сбережения. Норма сбережений (доход − расходы) точнее; она появляется, когда трекаешь расходы через бота. График наполнится с накоплением истории по месяцам.
           </p>
 
           <button className="linkbtn" onClick={() => setEditing(true)}>Изменить доход</button>
@@ -71,6 +78,31 @@ export function EfficiencyScreen({ onBack }: { onBack?: () => void }) {
         />
       )}
     </div>
+  )
+}
+
+// Bars of capital added per month (green up / red down), scaled to the largest.
+function MonthBars({ trend }: { trend: EffMonth[] }) {
+  const W = 300
+  const H = 74
+  const max = Math.max(1, ...trend.map((t) => Math.abs(t.growth)))
+  const n = trend.length
+  const slot = W / n
+  const bw = Math.min(30, slot * 0.5)
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 14}`} className="chart-svg" role="img" aria-label="В капитал по месяцам">
+      {trend.map((t, i) => {
+        const cx = i * slot + slot / 2
+        const h = (Math.abs(t.growth) / max) * H
+        const up = t.growth >= 0
+        return (
+          <g key={t.month}>
+            <rect x={(cx - bw / 2).toFixed(1)} y={(H - h).toFixed(1)} width={bw.toFixed(1)} height={h.toFixed(1)} rx="3" fill={up ? 'var(--pos)' : 'var(--neg)'} />
+            <text x={cx.toFixed(1)} y={H + 11} fontSize="8" textAnchor="middle" fill="var(--muted)">{t.month.slice(5)}</text>
+          </g>
+        )
+      })}
+    </svg>
   )
 }
 

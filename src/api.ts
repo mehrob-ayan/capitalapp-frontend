@@ -349,6 +349,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     }
     throw new Error(detail)
   }
+  // Some endpoints answer 200/201 with an empty body (e.g. a payment). Only
+  // parse JSON when there's actually a body, otherwise return undefined — an
+  // empty body is a success, not a parse error.
   if (res.status === 204) return undefined as T
-  return (await res.json()) as T
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T
 }

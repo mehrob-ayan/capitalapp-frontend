@@ -11,6 +11,7 @@ export function Category({
   baseCurrency,
   onBack,
   onOpenAsset,
+  onOpenAccount,
   onAdd,
 }: {
   kind: Kind
@@ -18,6 +19,7 @@ export function Category({
   baseCurrency: string
   onBack: () => void
   onOpenAsset: (id: number) => void
+  onOpenAccount?: (id: number) => void
   onAdd: (kind: Kind) => void
 }) {
   const meta = KIND_META[kind]
@@ -42,7 +44,7 @@ export function Category({
 
       <div className="list">
         {items.map((a) => (
-          <button key={a.id} className="li" onClick={() => onOpenAsset(a.id)}>
+          <button key={a.id} className="li" onClick={() => (a.isAccount && onOpenAccount ? onOpenAccount(a.id) : onOpenAsset(a.id))}>
             <span className="li-mark" style={{ background: kindColor(a.kind) }}>{meta.letter}</span>
             <span className="li-main">
               <span className="li-name">{a.name}</span>

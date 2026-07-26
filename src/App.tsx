@@ -23,7 +23,7 @@ import { Expenses } from './screens/Expenses'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 
-type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'accounts' } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
+type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'accounts' } | { name: 'account'; id: number } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
 // Persist the current screen so a page refresh doesn't jump back to Overview.
 const ROUTE_KEY = 'capital_route'
@@ -111,6 +111,7 @@ export default function App() {
       const a = data?.assets.find((x) => x.id === route.id)
       return setRoute(a ? { name: 'category', kind: a.kind as Kind } : { name: 'home' })
     }
+    if (route.name === 'account') return setRoute({ name: 'category', kind: 'cash' })
     if (route.name === 'category') return setRoute({ name: 'home' })
     if (route.name === 'goals') return setRoute({ name: 'more' })
     if (route.name === 'options') return setRoute({ name: 'more' })
@@ -173,6 +174,7 @@ export default function App() {
           baseCurrency={data.overview.baseCurrency}
           onBack={back}
           onOpenAsset={(id) => { haptic(); setRoute({ name: 'position', id }) }}
+          onOpenAccount={(id) => { haptic(); setRoute({ name: 'account', id }) }}
           onAdd={openAdd}
         />
       )}
@@ -186,6 +188,7 @@ export default function App() {
       {route.name === 'activity' && <ActivityScreen onBack={back} />}
       {route.name === 'efficiency' && <EfficiencyScreen onBack={back} />}
       {route.name === 'accounts' && <AccountsScreen onBack={back} onChanged={() => void reload()} />}
+      {route.name === 'account' && <AccountsScreen initialAccountId={route.id} onBack={back} onChanged={() => void reload()} />}
 
       {route.name === 'more' && (
         <Settings

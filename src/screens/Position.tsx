@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getAssetHistory, getAccounts, payDebt, type Asset, type AssetHistory, type Account } from '../api'
+import { getAssetHistory, getAccounts, payDebt, getDebtPayments, type Asset, type AssetHistory, type Account, type AccountEntry } from '../api'
 import { KIND_META, kindColor } from '../kinds'
-import { money, percent, monthYear, duration } from '../format'
+import { money, percent, monthYear, duration, dateShort } from '../format'
 import { TopBar } from '../components/TopBar'
 import { AreaChart } from '../components/AreaChart'
 import { Sheet } from '../components/Sheet'
@@ -38,6 +38,11 @@ export function Position({
   useEffect(() => {
     if (showValueChart) void getAssetHistory(asset.id).then(setHistory)
   }, [asset.id, showValueChart])
+
+  const [payments, setPayments] = useState<AccountEntry[]>([])
+  useEffect(() => {
+    if (isDebt) void getDebtPayments(asset.id).then(setPayments)
+  }, [asset.id, isDebt])
 
   return (
     <div className="pad-screen with-back">
@@ -112,6 +117,23 @@ export function Position({
 
       {asset.excludeFromNetWorth && (
         <p className="note">Не входит в чистый капитал — учитывается только в своём разделе.</p>
+      )}
+
+      {isDebt && payments.length > 0 && (
+        <>
+          <label className="section-lbl">История платежей</label>
+          <div className="list">
+            {payments.map((p) => (
+              <div className="li static" key={p.id}>
+                <span className="li-main">
+                  <span className="li-name">{p.note || 'Платёж'}</span>
+                  <span className="li-sub">{dateShort(p.date)}</span>
+                </span>
+                <span className="li-amt"><span className="li-a neg">−{money(p.amount, cur)}</span></span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {isDebt && <button className="mainbtn" onClick={() => setPaying(true)}>Внести платёж</button>}

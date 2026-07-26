@@ -8,16 +8,19 @@ import { CURRENCIES } from '../kinds'
 import { TopBar } from '../components/TopBar'
 import { Sheet } from '../components/Sheet'
 
-export function AccountsScreen({ onBack, onChanged }: { onBack?: () => void; onChanged?: () => void }) {
+export function AccountsScreen({ onBack, onChanged, initialAccountId }: { onBack?: () => void; onChanged?: () => void; initialAccountId?: number }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
-  const [openId, setOpenId] = useState<number | null>(null)
+  const [openId, setOpenId] = useState<number | null>(initialAccountId ?? null)
   const [creating, setCreating] = useState(false)
 
   const load = () => void getAccounts().then(setAccounts)
   useEffect(load, [])
 
   if (openId != null) {
-    return <Ledger id={openId} onBack={() => { setOpenId(null); load() }} onChanged={onChanged} />
+    // Opened straight into one account (from the overview) → back leaves the
+    // screen; drilled in from the list → back returns to the list.
+    const onBackLedger = initialAccountId != null ? (onBack ?? (() => {})) : () => { setOpenId(null); load() }
+    return <Ledger id={openId} onBack={onBackLedger} onChanged={onChanged} />
   }
 
   return (

@@ -18,11 +18,12 @@ import { Goals } from './screens/Goals'
 import { OptionsScreen } from './screens/OptionsScreen'
 import { ActivityScreen } from './screens/ActivityScreen'
 import { EfficiencyScreen } from './screens/EfficiencyScreen'
+import { AccountsScreen } from './screens/AccountsScreen'
 import { Expenses } from './screens/Expenses'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 
-type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
+type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'accounts' } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
 // Persist the current screen so a page refresh doesn't jump back to Overview.
 const ROUTE_KEY = 'capital_route'
@@ -115,6 +116,7 @@ export default function App() {
     if (route.name === 'options') return setRoute({ name: 'more' })
     if (route.name === 'activity') return setRoute({ name: 'more' })
     if (route.name === 'efficiency') return setRoute({ name: 'more' })
+    if (route.name === 'accounts') return setRoute({ name: 'more' })
   }, [form, chooser, route, data])
 
   useEffect(() => {
@@ -175,7 +177,7 @@ export default function App() {
         />
       )}
 
-      {route.name === 'position' && <PositionRoute data={data} id={route.id} onBack={back} onEdit={(a) => setForm({ kind: a.kind as Kind, existing: a })} onDelete={removeAsset} />}
+      {route.name === 'position' && <PositionRoute data={data} id={route.id} onBack={back} onEdit={(a) => setForm({ kind: a.kind as Kind, existing: a })} onDelete={removeAsset} onChanged={() => void reload()} />}
 
       {route.name === 'expenses' && <Expenses addSignal={expenseAdd} />}
       {route.name === 'history' && <HistoryScreen baseCurrency={data.overview.baseCurrency} onChangeCurrency={changeCurrency} />}
@@ -183,6 +185,7 @@ export default function App() {
       {route.name === 'options' && <OptionsScreen onBack={back} />}
       {route.name === 'activity' && <ActivityScreen onBack={back} />}
       {route.name === 'efficiency' && <EfficiencyScreen onBack={back} />}
+      {route.name === 'accounts' && <AccountsScreen onBack={back} onChanged={() => void reload()} />}
 
       {route.name === 'more' && (
         <Settings
@@ -193,6 +196,7 @@ export default function App() {
           onOpenOptions={() => setRoute({ name: 'options' })}
           onOpenActivity={() => setRoute({ name: 'activity' })}
           onOpenEfficiency={() => setRoute({ name: 'efficiency' })}
+          onOpenAccounts={() => setRoute({ name: 'accounts' })}
         />
       )}
 
@@ -217,16 +221,17 @@ export default function App() {
   )
 }
 
-function PositionRoute({ data, id, onBack, onEdit, onDelete }: {
+function PositionRoute({ data, id, onBack, onEdit, onDelete, onChanged }: {
   data: Data
   id: number
   onBack: () => void
   onEdit: (a: Asset) => void
   onDelete: (id: number) => void
+  onChanged: () => void
 }) {
   const asset = data.assets.find((a) => a.id === id)
   if (!asset) {
     return <div className="pad-screen with-back"><TopBar title="Позиция" onBack={onBack} /><p className="muted">Позиция не найдена.</p></div>
   }
-  return <Position asset={asset} onBack={onBack} onEdit={() => onEdit(asset)} onDelete={() => onDelete(asset.id)} />
+  return <Position asset={asset} onBack={onBack} onEdit={() => onEdit(asset)} onDelete={() => onDelete(asset.id)} onChanged={onChanged} />
 }

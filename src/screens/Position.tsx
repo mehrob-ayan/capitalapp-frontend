@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { getAssetHistory, type Asset, type AssetHistory } from '../api'
+import { getAssetHistory, getAccounts, payDebt, type Asset, type AssetHistory, type Account } from '../api'
 import { KIND_META, kindColor } from '../kinds'
 import { money, percent, monthYear, duration } from '../format'
 import { TopBar } from '../components/TopBar'
 import { AreaChart } from '../components/AreaChart'
+import { Sheet } from '../components/Sheet'
 
 const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment', 'metals'])
 
@@ -14,12 +15,15 @@ export function Position({
   onBack,
   onEdit,
   onDelete,
+  onChanged,
 }: {
   asset: Asset
   onBack: () => void
   onEdit: () => void
   onDelete: () => void
+  onChanged?: () => void
 }) {
+  const [paying, setPaying] = useState(false)
   const meta = KIND_META[(asset.kind as keyof typeof KIND_META)] ?? KIND_META.cash
   const cur = asset.currency
   const isDebt = asset.kind === 'debt'
@@ -110,9 +114,53 @@ export function Position({
         <p className="note">Не входит в чистый капитал — учитывается только в своём разделе.</p>
       )}
 
-      <button className="mainbtn" onClick={onEdit}>Изменить</button>
+      {isDebt && <button className="mainbtn" onClick={() => setPaying(true)}>Внести платёж</button>}
+      <button className={isDebt ? 'linkbtn' : 'mainbtn'} onClick={onEdit}>Изменить</button>
       <button className="linkbtn danger" onClick={onDelete}>Удалить</button>
+
+      {paying && (
+        <PaySheet asset={asset} onClose={() => setPaying(false)} onPaid={() => { setPaying(false); onChanged?.(); onBack() }} />
+      )}
     </div>
+  )
+}
+
+function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => void; onPaid: () => void }) {
+  const [accounts, setAccounts] = useState<Account[] | null>(null)
+  const [accId, setAccId] = useState<number | null>(null)
+  const [amount, setAmount] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    void getAccounts().then((a) => { setAccounts(a); if (a.length) setAccId((a.find((x) => x.isSalary) ?? a[0]).id) })
+  }, [])
+
+  async function save() {
+    const amt = parseFloat(amount)
+    if (!accId || !Number.isFinite(amt) || amt <= 0) return
+    setBusy(true)
+    try { await payDebt(asset.id, { amount: amt, accountId: accId }); onPaid() } finally { setBusy(false) }
+  }
+
+  return (
+    <Sheet title="Внести платёж" subtitle={asset.name} onClose={onClose}>
+      {accounts && accounts.length === 0 ? (
+        <p className="muted">Сначала заведи счёт в разделе «Счета» — платёж списывается с него.</p>
+      ) : (
+        <>
+          <div className="fld"><label>Со счёта</label><div className="seg">
+            {accounts?.map((a) => (
+              <button key={a.id} type="button" className={a.id === accId ? 'on' : ''} onClick={() => setAccId(a.id)}>{a.name}</button>
+            ))}
+          </div></div>
+          <div className="fld"><label>Сумма платежа ({asset.currency})</label><div className="inp-wrap">
+            <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div></div>
+          <p className="note">Спишется со счёта и уменьшит долг. Капитал изменится только на проценты — тело долга переходит из денег в погашение.</p>
+          <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Оплатить'}</button>
+        </>
+      )}
+    </Sheet>
   )
 }
 

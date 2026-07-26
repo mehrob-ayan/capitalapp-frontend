@@ -25,7 +25,6 @@ export function AssetForm({
 
   const [currency, setCurrency] = useState(existing?.currency ?? 'TJS')
   const [values, setValues] = useState<Record<string, string>>(() => initialValues(fields, existing, isDebt ? scheme : undefined))
-  const [exclude, setExclude] = useState(existing?.excludeFromNetWorth ?? false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,7 +34,7 @@ export function AssetForm({
     setSaving(true)
     setError(null)
     try {
-      const input = { ...toInput(kind, currency, values, isDebt ? scheme : undefined), excludeFromNetWorth: exclude }
+      const input = { ...toInput(kind, currency, values, isDebt ? scheme : undefined), excludeFromNetWorth: false }
       if (existing) await updateAsset(existing.id, input)
       else await createAsset(input)
       onSaved()
@@ -82,20 +81,6 @@ export function AssetForm({
       {(isDebt ? schemeDef.fields : fields).map((f) => (
         <FieldRow key={f.key} field={f} value={values[f.key] ?? ''} currency={currency} onChange={(v) => set(f.key, v)} />
       ))}
-
-      <div className="soon-row" style={{ marginTop: 16 }}>
-        <div className="rate-l">
-          Учитывать в чистом капитале
-          <small>выкл — видно в разделе, но не в чистом капитале</small>
-        </div>
-        <button
-          type="button"
-          className={`switch ${!exclude ? 'on' : ''}`}
-          onClick={() => setExclude((v) => !v)}
-          aria-pressed={!exclude}
-          aria-label="Учитывать в чистом капитале"
-        />
-      </div>
 
       {error && <p className="form-error">{error}</p>}
 

@@ -14,6 +14,7 @@ export function Settings({
   onOpenOptions,
   onOpenActivity,
   onOpenEfficiency,
+  onOpenAccounts,
 }: {
   baseCurrency: string
   onChangeCurrency: (c: string) => void
@@ -22,6 +23,7 @@ export function Settings({
   onOpenOptions: () => void
   onOpenActivity: () => void
   onOpenEfficiency: () => void
+  onOpenAccounts: () => void
 }) {
   const [draft, setDraft] = useState<Record<string, string> | null>(null)
   const [saving, setSaving] = useState(false)
@@ -137,6 +139,9 @@ export function Settings({
       <div className="topbar">Ещё</div>
 
       <label className="section-lbl">Капитал</label>
+      <button className="nav-row" onClick={onOpenAccounts}>
+        <span>💳 Счета</span><span className="chev">›</span>
+      </button>
       <button className="nav-row" onClick={onOpenGoals}>
         <span>🎯 Цели по капиталу</span><span className="chev">›</span>
       </button>

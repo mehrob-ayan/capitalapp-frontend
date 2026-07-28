@@ -52,7 +52,9 @@ export function Settings({
       for (const c of EDITABLE) {
         const perUSD = r[c] ?? 0
         const perDollar = perUSD > 0 ? 1 / perUSD : 0
-        d[c] = perDollar ? String(c === 'UZS' ? Math.round(perDollar) : Math.round(perDollar * 100) / 100) : ''
+        // UZS whole numbers; TJS to 4 decimals so the shown rate matches what's
+        // stored (2 decimals lost precision and nudged the rate on re-save).
+        d[c] = perDollar ? String(c === 'UZS' ? Math.round(perDollar) : Math.round(perDollar * 10000) / 10000) : ''
       }
       setDraft(d)
     })
@@ -181,7 +183,7 @@ export function Settings({
             <input
               className="rate-v"
               type="number"
-              step={c === 'UZS' ? '1' : '0.01'}
+              step={c === 'UZS' ? '1' : '0.0001'}
               inputMode="decimal"
               value={draft[c]}
               onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}

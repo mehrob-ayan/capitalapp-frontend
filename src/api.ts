@@ -330,6 +330,9 @@ export const deleteAccountEntry = (id: number) => request<void>(`/api/v1/entries
 export const payDebt = (debtId: number, p: { amount: number; accountId: number; date?: string }) =>
   request<void>(`/api/v1/debts/${debtId}/pay`, { method: 'POST', body: JSON.stringify(p) })
 export const getDebtPayments = (debtId: number) => request<AccountEntry[]>(`/api/v1/debts/${debtId}/payments`)
+export const repayLent = (lentId: number, p: { amount: number; accountId: number; date?: string }) =>
+  request<void>(`/api/v1/lent/${lentId}/repay`, { method: 'POST', body: JSON.stringify(p) })
+export const getLentRepayments = (lentId: number) => request<AccountEntry[]>(`/api/v1/lent/${lentId}/repayments`)
 
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })

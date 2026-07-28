@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAssetHistory, getAccounts, payDebt, getDebtPayments, type Asset, type AssetHistory, type Account, type AccountEntry } from '../api'
+import { getAssetHistory, getAccounts, payDebt, getDebtPayments, repayLent, getLentRepayments, type Asset, type AssetHistory, type Account, type AccountEntry } from '../api'
 import { KIND_META, kindColor } from '../kinds'
 import { money, percent, monthYear, duration, dateShort } from '../format'
 import { TopBar } from '../components/TopBar'
@@ -27,6 +27,7 @@ export function Position({
   const meta = KIND_META[(asset.kind as keyof typeof KIND_META)] ?? KIND_META.cash
   const cur = asset.currency
   const isDebt = asset.kind === 'debt'
+  const isLent = asset.kind === 'lent'
   const isDeposit = asset.kind === 'deposit'
   const loan = asset.metrics.loan
   const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
@@ -42,7 +43,8 @@ export function Position({
   const [payments, setPayments] = useState<AccountEntry[]>([])
   useEffect(() => {
     if (isDebt) void getDebtPayments(asset.id).then(setPayments)
-  }, [asset.id, isDebt])
+    else if (isLent) void getLentRepayments(asset.id).then(setPayments)
+  }, [asset.id, isDebt, isLent])
 
   return (
     <div className="pad-screen with-back">
@@ -56,8 +58,8 @@ export function Position({
         </span>
       </div>
 
-      <div className="eyebrow">{isDebt ? 'Остаток долга сегодня' : isDeposit ? 'Сумма сегодня' : 'Стоит сейчас'}</div>
-      <div className={`hero small ${isDebt ? 'neg' : ''}`}>
+      <div className="eyebrow">{isDebt ? 'Остаток долга сегодня' : isDeposit ? 'Сумма сегодня' : isLent ? 'Ещё вернут' : 'Стоит сейчас'}</div>
+      <div className={`hero small ${isDebt ? 'neg' : isLent ? 'pos' : ''}`}>
         {isDebt ? '−' : ''}{money(isDebt && loan ? loan.outstanding : isDeposit ? accrued : asset.value, cur)}
       </div>
       {isDeposit && depositInterest > 0 && (
@@ -77,6 +79,14 @@ export function Position({
             {loan.remainingMonths > 0 && <Row k="Закрытие" v={monthYear(loan.payoffDate)} />}
           </div>
           <p className="note">{debtNote(asset, loan.outstanding, cur)}</p>
+        </>
+      ) : isLent ? (
+        <>
+          <div className="stat">
+            <Row k="Дал в долг" v={money(asset.value, cur)} />
+            {asset.monthlyPayment > 0 && <Row k="Возврат в месяц" v={money(asset.monthlyPayment, cur)} cls="pos" />}
+          </div>
+          <p className="note">Тебе должны вернуть эту сумму — она в твоих активах. Отмечай возврат кнопкой «Получить возврат»: деньги придут на счёт, а долг тебе уменьшится.</p>
         </>
       ) : (
         <>
@@ -119,17 +129,17 @@ export function Position({
         <p className="note">Не входит в чистый капитал — учитывается только в своём разделе.</p>
       )}
 
-      {isDebt && payments.length > 0 && (
+      {(isDebt || isLent) && payments.length > 0 && (
         <>
-          <label className="section-lbl">История платежей</label>
+          <label className="section-lbl">{isLent ? 'История возвратов' : 'История платежей'}</label>
           <div className="list">
             {payments.map((p) => (
               <div className="li static" key={p.id}>
                 <span className="li-main">
-                  <span className="li-name">{p.note || 'Платёж'}</span>
+                  <span className="li-name">{p.note || (isLent ? 'Возврат' : 'Платёж')}</span>
                   <span className="li-sub">{dateShort(p.date)}</span>
                 </span>
-                <span className="li-amt"><span className="li-a neg">−{money(p.debtAmount ?? p.amount, cur)}</span></span>
+                <span className="li-amt"><span className={`li-a ${isLent ? 'pos' : 'neg'}`}>{isLent ? '+' : '−'}{money(p.debtAmount ?? p.amount, cur)}</span></span>
               </div>
             ))}
           </div>
@@ -137,11 +147,13 @@ export function Position({
       )}
 
       {isDebt && <button className="mainbtn" onClick={() => setPaying(true)}>Внести платёж</button>}
-      <button className={isDebt ? 'linkbtn' : 'mainbtn'} onClick={onEdit}>Изменить</button>
+      {isLent && <button className="mainbtn" onClick={() => setPaying(true)}>Получить возврат</button>}
+      <button className={isDebt || isLent ? 'linkbtn' : 'mainbtn'} onClick={onEdit}>Изменить</button>
       <button className="linkbtn danger" onClick={onDelete}>Удалить</button>
 
-      {paying && (
-        <PaySheet asset={asset} onClose={() => setPaying(false)} onPaid={() => { setPaying(false); onChanged?.(); onBack() }} />
+      {paying && (isLent
+        ? <RepaySheet asset={asset} onClose={() => setPaying(false)} onDone={() => { setPaying(false); onChanged?.(); onBack() }} />
+        : <PaySheet asset={asset} onClose={() => setPaying(false)} onPaid={() => { setPaying(false); onChanged?.(); onBack() }} />
       )}
     </div>
   )
@@ -180,6 +192,45 @@ function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => voi
           </div></div>
           <p className="note">Спишется со счёта и уменьшит долг. Капитал изменится только на проценты — тело долга переходит из денег в погашение.</p>
           <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Оплатить'}</button>
+        </>
+      )}
+    </Sheet>
+  )
+}
+
+function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
+  const [accounts, setAccounts] = useState<Account[] | null>(null)
+  const [accId, setAccId] = useState<number | null>(null)
+  const [amount, setAmount] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    void getAccounts().then((a) => { setAccounts(a); if (a.length) setAccId((a.find((x) => x.isSalary) ?? a[0]).id) })
+  }, [])
+
+  async function save() {
+    const amt = parseFloat(amount)
+    if (!accId || !Number.isFinite(amt) || amt <= 0) return
+    setBusy(true)
+    try { await repayLent(asset.id, { amount: amt, accountId: accId }); onDone() } finally { setBusy(false) }
+  }
+
+  return (
+    <Sheet title="Получить возврат" subtitle={asset.name} onClose={onClose}>
+      {accounts && accounts.length === 0 ? (
+        <p className="muted">Сначала заведи счёт в разделе «Счета» — возврат придёт на него.</p>
+      ) : (
+        <>
+          <div className="fld"><label>На счёт</label><div className="seg">
+            {accounts?.map((a) => (
+              <button key={a.id} type="button" className={a.id === accId ? 'on' : ''} onClick={() => setAccId(a.id)}>{a.name}</button>
+            ))}
+          </div></div>
+          <div className="fld"><label>Сумма возврата ({asset.currency})</label><div className="inp-wrap">
+            <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div></div>
+          <p className="note">Придёт на счёт и уменьшит «долг мне». Капитал не изменится — деньги просто вернулись из долга в кэш.</p>
+          <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Получить'}</button>
         </>
       )}
     </Sheet>

@@ -2,7 +2,7 @@
 // progressive form fields shown when adding/editing each kind. Jargon
 // (subtype, loan type) lives only on the kinds that need it.
 
-export type Kind = 'realestate' | 'car' | 'deposit' | 'cash' | 'metals' | 'investment' | 'debt'
+export type Kind = 'realestate' | 'car' | 'deposit' | 'cash' | 'metals' | 'investment' | 'debt' | 'lent'
 
 export interface KindMeta {
   label: string
@@ -19,6 +19,7 @@ export const KIND_META: Record<Kind, KindMeta> = {
   cash: { label: 'Наличные и счета', example: 'кэш, карта, счёт', letter: 'Н', color: '#C6A254' },
   metals: { label: 'Металлы', example: 'золото, серебро, монеты', letter: 'М', color: '#CDA434' },
   investment: { label: 'Инвестиции', example: 'акции, облигации, фонды', letter: 'И', color: '#3E8C79' },
+  lent: { label: 'Долг мне', example: 'дал в долг — вернут', letter: 'Д', color: '#4A8FA8' },
   debt: { label: 'Кредит или долг', example: 'кредит, рассрочка, ипотека', letter: 'К', color: '#BF5030', isLiability: true },
 }
 
@@ -29,7 +30,7 @@ export function kindColor(kind: string): string {
 
 // Chooser groups: common categories first, investing separated out so the
 // typical user (deposit / car / mortgage) never meets stock jargon by default.
-export const CHOOSER_PRIMARY: Kind[] = ['realestate', 'car', 'deposit', 'cash', 'metals', 'debt']
+export const CHOOSER_PRIMARY: Kind[] = ['realestate', 'car', 'deposit', 'cash', 'metals', 'debt', 'lent']
 export const CHOOSER_ADVANCED: Kind[] = ['investment']
 
 export type Field =
@@ -88,6 +89,11 @@ export const FORM_FIELDS: Record<Kind, Field[]> = {
   ],
   // Debt shows a scheme picker (see DEBT_SCHEMES); only the name lives here.
   debt: [{ key: 'name', type: 'text', label: 'Название', placeholder: 'Напр. ипотека, рассрочка, займ' }],
+  lent: [
+    { key: 'name', type: 'text', label: 'Кому дал', placeholder: 'Напр. брату' },
+    { key: 'value', type: 'money', label: 'Сколько дал' },
+    { key: 'monthlyPayment', type: 'money', label: 'Возврат в месяц', hint: 'если возвращают частями — иначе оставь пустым' },
+  ],
 }
 
 export type DebtScheme = 'accruing' | 'annuity' | 'differentiated' | 'interestfree'

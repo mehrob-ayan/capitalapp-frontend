@@ -6,6 +6,7 @@ import {
 import { money, monthYear, dateShort } from '../format'
 import { Donut, colorFor } from '../components/Donut'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 import type { MonthTrend } from '../api'
 
 // Grouped income/expense bars for the last months. Shares one scale.
@@ -203,7 +204,7 @@ function QuickAdd({
       <div className="fld" style={{ marginTop: 14 }}>
         <label>Сумма</label>
         <div className="inp-wrap">
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
           <span className="inp-suf">сўм</span>
         </div>
       </div>

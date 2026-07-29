@@ -5,6 +5,13 @@ import { money, percent, monthYear, duration, dateShort } from '../format'
 import { TopBar } from '../components/TopBar'
 import { AreaChart } from '../components/AreaChart'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
+
+// A monetary default for a pay/repay field, rounded to 2 decimals, as a raw
+// string — empty when there is no sensible amount to prefill.
+function prefillAmount(v: number): string {
+  return v > 0 ? String(Math.round(v * 100) / 100) : ''
+}
 
 const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment', 'metals'])
 
@@ -162,7 +169,8 @@ export function Position({
 function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => void; onPaid: () => void }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
   const [accId, setAccId] = useState<number | null>(null)
-  const [amount, setAmount] = useState('')
+  // Prefill with the debt's monthly payment — the amount you almost always pay.
+  const [amount, setAmount] = useState(() => prefillAmount(asset.metrics.loan?.monthlyPayment ?? asset.monthlyPayment))
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -188,7 +196,7 @@ function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => voi
             ))}
           </div></div>
           <div className="fld"><label>Сумма платежа ({asset.currency})</label><div className="inp-wrap">
-            <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
           </div></div>
           <p className="note">Спишется со счёта и уменьшит долг. Капитал изменится только на проценты — тело долга переходит из денег в погашение.</p>
           <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Оплатить'}</button>
@@ -201,7 +209,8 @@ function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => voi
 function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
   const [accId, setAccId] = useState<number | null>(null)
-  const [amount, setAmount] = useState('')
+  // Prefill with the expected monthly repayment when one is set.
+  const [amount, setAmount] = useState(() => prefillAmount(asset.monthlyPayment))
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -227,7 +236,7 @@ function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => v
             ))}
           </div></div>
           <div className="fld"><label>Сумма возврата ({asset.currency})</label><div className="inp-wrap">
-            <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
           </div></div>
           <p className="note">Придёт на счёт и уменьшит «долг мне». Капитал не изменится — деньги просто вернулись из долга в кэш.</p>
           <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Получить'}</button>

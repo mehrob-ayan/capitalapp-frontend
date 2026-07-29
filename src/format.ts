@@ -54,6 +54,30 @@ export function duration(months: number): string {
   return parts.join(' ') || '0 мес'
 }
 
+/**
+ * cleanAmountInput normalizes a typed money string into a parseFloat-friendly
+ * raw value: digits with at most one dot as the decimal separator. Accepts a
+ * comma or a dot for decimals; strips spaces and any other characters.
+ */
+export function cleanAmountInput(display: string): string {
+  let s = display.replace(/\s/g, '').replace(/,/g, '.').replace(/[^0-9.]/g, '')
+  const dot = s.indexOf('.')
+  if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '')
+  return s
+}
+
+/**
+ * formatAmountInput renders a raw money string (from cleanAmountInput) with
+ * thousands separators so a stray extra zero is easy to catch. Preserves a
+ * trailing decimal separator and decimals while the user is still typing.
+ */
+export function formatAmountInput(raw: string): string {
+  if (!raw) return ''
+  const [int, ...rest] = raw.split('.')
+  const grouped = (int || '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+  return raw.includes('.') ? `${grouped},${rest.join('')}` : grouped
+}
+
 function plural(n: number, one: string, few: string, many: string): string {
   const mod10 = n % 10
   const mod100 = n % 100

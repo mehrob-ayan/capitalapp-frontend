@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 import { CURRENCIES, DEBT_SCHEMES, FORM_FIELDS, KIND_META, type DebtScheme, type Field, type Kind } from '../kinds'
 import { symbol } from '../format'
 import { createAsset, updateAsset, type Asset, type AssetInput } from '../api'
@@ -124,14 +125,18 @@ function FieldRow({
       <label>{field.label}{hint}</label>
       <div className="inp-wrap">
         {field.type === 'money' && <span className="inp-pre">{symbol(currency)}</span>}
-        <input
-          className={field.type === 'money' ? 'inp big' : 'inp'}
-          type={field.type === 'text' ? 'text' : field.type === 'month' ? 'month' : 'number'}
-          inputMode={field.type === 'money' || field.type === 'number' ? 'decimal' : undefined}
-          placeholder={field.type === 'text' ? field.placeholder : field.type === 'month' ? '' : '0'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
+        {field.type === 'money' ? (
+          <MoneyInput className="inp big" placeholder="0" value={value} onChange={onChange} />
+        ) : (
+          <input
+            className="inp"
+            type={field.type === 'text' ? 'text' : field.type === 'month' ? 'month' : 'number'}
+            inputMode={field.type === 'number' ? 'decimal' : undefined}
+            placeholder={field.type === 'text' ? field.placeholder : field.type === 'month' ? '' : '0'}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        )}
         {field.type === 'number' && 'suffix' in field && field.suffix && <span className="inp-suf">{field.suffix}</span>}
       </div>
     </div>

@@ -146,7 +146,7 @@ export const getRates = () => request<Record<string, number>>('/api/v1/rates')
 export const setRates = (rates: Record<string, number>) =>
   request<Record<string, number>>('/api/v1/rates', { method: 'PATCH', body: JSON.stringify({ rates }) })
 
-export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number }
+export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number; note: string }
 export interface History {
   baseCurrency: string
   points: HistoryPoint[]
@@ -183,6 +183,8 @@ export const patchSnapshot = (date: string, netWorth: number) =>
   request<void>(`/api/v1/history/${date}`, { method: 'PATCH', body: JSON.stringify({ netWorth }) })
 export const deleteSnapshot = (date: string) =>
   request<void>(`/api/v1/history/${date}`, { method: 'DELETE' })
+export const setSnapshotNote = (date: string, note: string) =>
+  request<void>(`/api/v1/history/${date}/note`, { method: 'PATCH', body: JSON.stringify({ note }) })
 
 export interface AssetHistory {
   currency: string

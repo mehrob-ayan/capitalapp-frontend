@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
-  getHistory, getComposition, getGoals, getRates, patchSnapshot, deleteSnapshot,
+  getHistory, getComposition, getGoals, getRates, patchSnapshot, deleteSnapshot, setSnapshotNote,
   type History, type Composition,
 } from '../api'
 import { CURRENCIES, KIND_META, kindColor } from '../kinds'
@@ -8,6 +8,7 @@ import { money, signedMoney, percent, dateShort } from '../format'
 import { AreaChart } from '../components/AreaChart'
 import { LinesChart } from '../components/LinesChart'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 
 const PERIODS: [string, string][] = [
   ['1m', '1М'],
@@ -26,7 +27,7 @@ export function HistoryScreen({ baseCurrency, onChangeCurrency }: { baseCurrency
   const [data, setData] = useState<History | null>(null)
   const [comp, setComp] = useState<Composition | null>(null)
   const [goalBase, setGoalBase] = useState<number | undefined>(undefined)
-  const [edit, setEdit] = useState<{ date: string; value: number } | null>(null)
+  const [edit, setEdit] = useState<{ date: string; value: number; note: string } | null>(null)
 
   const reload = () => {
     void getHistory(period).then(setData)
@@ -112,13 +113,13 @@ export function HistoryScreen({ baseCurrency, onChangeCurrency }: { baseCurrency
             </div>
           )}
 
-          <label className="section-lbl">Снимки капитала <span className="hint">· нажми, чтобы поправить</span></label>
+          <label className="section-lbl">Снимки капитала <span className="hint">· нажми, чтобы добавить заметку</span></label>
           <div className="list history-list">
             {[...data.points].reverse().map((p) => (
-              <button className="li" key={p.date} onClick={() => setEdit({ date: p.date, value: Math.round(p.netWorth) })}>
+              <button className="li" key={p.date} onClick={() => setEdit({ date: p.date, value: Math.round(p.netWorth), note: p.note ?? '' })}>
                 <span className="li-main">
-                  <span className="li-name">{dateShort(p.date)}</span>
-                  <span className="li-sub">снимок капитала</span>
+                  <span className="li-name">{dateShort(p.date)}{p.note ? ' 📝' : ''}</span>
+                  <span className="li-sub">{p.note || 'снимок капитала'}</span>
                 </span>
                 <span className="li-amt"><span className="li-a">{money(p.netWorth, data.baseCurrency)}</span></span>
               </button>
@@ -131,6 +132,7 @@ export function HistoryScreen({ baseCurrency, onChangeCurrency }: { baseCurrency
         <SnapshotSheet
           date={edit.date}
           initial={edit.value}
+          initialNote={edit.note}
           currency={data.baseCurrency}
           onClose={() => setEdit(null)}
           onSaved={() => { setEdit(null); reload() }}
@@ -167,22 +169,29 @@ function StackedBars({ comp }: { comp: Composition }) {
 }
 
 function SnapshotSheet({
-  date, initial, currency, onClose, onSaved,
+  date, initial, initialNote, currency, onClose, onSaved,
 }: {
   date: string
   initial: number
+  initialNote: string
   currency: string
   onClose: () => void
   onSaved: () => void
 }) {
   const [val, setVal] = useState(String(initial))
+  const [note, setNote] = useState(initialNote)
   const [busy, setBusy] = useState(false)
 
   async function save() {
     const n = parseFloat(val)
-    if (!Number.isFinite(n)) return
     setBusy(true)
-    try { await patchSnapshot(date, n); onSaved() } finally { setBusy(false) }
+    try {
+      // Only override capital when the number actually changed — otherwise a
+      // plain note edit would flatten the day's assets/liabilities breakdown.
+      if (Number.isFinite(n) && n !== initial) await patchSnapshot(date, n)
+      if (note.trim() !== initialNote.trim()) await setSnapshotNote(date, note)
+      onSaved()
+    } finally { setBusy(false) }
   }
   async function remove() {
     if (!window.confirm('Удалить этот снимок из истории?')) return
@@ -193,9 +202,19 @@ function SnapshotSheet({
   return (
     <Sheet title="Снимок капитала" subtitle={dateShort(date)} onClose={onClose}>
       <div className="fld">
+        <label>Заметка</label>
+        <textarea
+          className="inp"
+          rows={2}
+          placeholder="Напр. добавил долг, продал машину…"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
+      <div className="fld">
         <label>Капитал в этот день ({currency})</label>
         <div className="inp-wrap">
-          <input className="inp big" type="number" inputMode="decimal" value={val} onChange={(e) => setVal(e.target.value)} />
+          <MoneyInput className="inp big" value={val} onChange={setVal} />
         </div>
       </div>
       <button className="mainbtn" disabled={busy} onClick={save}>{busy ? 'Сохранение…' : 'Сохранить'}</button>

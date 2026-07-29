@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 import { CURRENCIES } from '../kinds'
 import { symbol } from '../format'
 import { createOption, updateOption, deleteOption, type OptionGrant } from '../api'
@@ -88,7 +89,7 @@ export function OptionForm({
       <div className="fld">
         <label>Количество опционов</label>
         <div className="inp-wrap">
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={quantity} onChange={setQuantity} />
         </div>
       </div>
 
@@ -96,7 +97,7 @@ export function OptionForm({
         <label>Цена за штуку</label>
         <div className="inp-wrap">
           <span className="inp-pre">{symbol(currency)}</span>
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={unitPrice} onChange={setUnitPrice} />
         </div>
       </div>
 

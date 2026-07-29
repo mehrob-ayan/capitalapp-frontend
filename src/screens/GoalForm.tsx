@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 import { CURRENCIES } from '../kinds'
 import { symbol } from '../format'
 import { createGoal, updateGoal, deleteGoal, type Goal } from '../api'
@@ -77,7 +78,7 @@ export function GoalForm({
         <label>Сумма цели</label>
         <div className="inp-wrap">
           <span className="inp-pre">{symbol(currency)}</span>
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={target} onChange={(e) => setTarget(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={target} onChange={setTarget} />
         </div>
       </div>
 
@@ -85,7 +86,7 @@ export function GoalForm({
         <label>Откладываю в месяц <span className="hint">· для прогноза срока</span></label>
         <div className="inp-wrap">
           <span className="inp-pre">{symbol(currency)}</span>
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={monthly} onChange={(e) => setMonthly(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={monthly} onChange={setMonthly} />
         </div>
       </div>
 

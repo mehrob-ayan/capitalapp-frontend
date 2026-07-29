@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../kinds'
 import { getRates, setRates, exportData, importData, getMe, setAutoRates } from '../api'
 import { symbol } from '../format'
+import { MoneyInput } from '../components/MoneyInput'
 import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../notify'
 
 const EDITABLE = ['TJS', 'UZS'] as const
@@ -180,13 +181,10 @@ export function Settings({
               1 доллар в {c === 'TJS' ? 'сомони' : 'сумах'}
               <small>сколько {symbol(c)} за $1</small>
             </div>
-            <input
+            <MoneyInput
               className="rate-v"
-              type="number"
-              step={c === 'UZS' ? '1' : '0.0001'}
-              inputMode="decimal"
               value={draft[c]}
-              onChange={(e) => setDraft({ ...draft, [c]: e.target.value })}
+              onChange={(v) => setDraft({ ...draft, [c]: v })}
             />
           </div>
         ))}

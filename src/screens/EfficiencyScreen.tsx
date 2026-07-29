@@ -5,6 +5,7 @@ import { CURRENCIES } from '../kinds'
 import { Ring } from '../components/Ring'
 import { TopBar } from '../components/TopBar'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 
 export function EfficiencyScreen({ onBack }: { onBack?: () => void }) {
   const [data, setData] = useState<Efficiency | null>(null)
@@ -138,7 +139,7 @@ function IncomeSheet({
         <label>Сумма в месяц <span className="hint">· аванс + зарплата</span></label>
         <div className="inp-wrap">
           <span className="inp-pre">{symbol(currency)}</span>
-          <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
         </div>
       </div>
       <button className="mainbtn" disabled={busy} onClick={save}>{busy ? 'Сохранение…' : 'Сохранить'}</button>

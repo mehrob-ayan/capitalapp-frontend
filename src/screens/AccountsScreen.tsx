@@ -7,6 +7,7 @@ import { money, dateShort } from '../format'
 import { CURRENCIES } from '../kinds'
 import { TopBar } from '../components/TopBar'
 import { Sheet } from '../components/Sheet'
+import { MoneyInput } from '../components/MoneyInput'
 
 export function AccountsScreen({ onBack, onChanged, initialAccountId }: { onBack?: () => void; onChanged?: () => void; initialAccountId?: number }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
@@ -159,7 +160,7 @@ function CreateSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
         {CURRENCIES.map((c) => <button key={c} type="button" className={c === currency ? 'on' : ''} onClick={() => setCurrency(c)}>{c}</button>)}
       </div></div>
       <div className="fld"><label>Остаток сейчас</label><div className="inp-wrap">
-        <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={start} onChange={(e) => setStart(e.target.value)} />
+        <MoneyInput className="inp big" placeholder="0" value={start} onChange={setStart} />
       </div></div>
       <div className="soon-row">
         <div className="rate-l">Зарплатный счёт<small>сюда авто-начисляется зарплата</small></div>
@@ -205,7 +206,7 @@ function EntrySheet({
   return (
     <Sheet title={entry ? `Изменить · ${title}` : title} subtitle={currency} onClose={onClose}>
       <div className="fld"><label>Сумма</label><div className="inp-wrap">
-        <input className="inp big" type="number" inputMode="decimal" placeholder="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
       </div></div>
       <div className="fld"><label>Заметка <span className="hint">· напр. отпускные, премия</span></label><div className="inp-wrap">
         <input className="inp" value={note} onChange={(e) => setNote(e.target.value)} />

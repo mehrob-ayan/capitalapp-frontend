@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import {
   authTelegram, deleteAsset, getAssets, getMe, getOverview, setBaseCurrency, getActivity,
   type Asset, type Overview, type User,
@@ -6,7 +6,7 @@ import {
 import { signedMoney } from './format'
 import { showNotify, getLastSeen, setLastSeen, notifyEnabled } from './notify'
 import { tg, isInsideTelegram, setBackButton, haptic } from './telegram'
-import type { Kind } from './kinds'
+import { KIND_META, type Kind } from './kinds'
 import { Dashboard } from './screens/Dashboard'
 import { Category } from './screens/Category'
 import { Position } from './screens/Position'
@@ -22,6 +22,20 @@ import { AccountsScreen } from './screens/AccountsScreen'
 import { Expenses } from './screens/Expenses'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
+import { DesktopOverview } from './screens/DesktopOverview'
+import { DesktopShell, type NavKey } from './components/DesktopShell'
+import { DesktopHistory } from './screens/desktop/DesktopHistory'
+import { DesktopExpenses } from './screens/desktop/DesktopExpenses'
+import { DesktopAccounts } from './screens/desktop/DesktopAccounts'
+import { DesktopCategory } from './screens/desktop/DesktopCategory'
+import { DesktopPosition } from './screens/desktop/DesktopPosition'
+import { DesktopGoals } from './screens/desktop/DesktopGoals'
+import { DesktopOptions } from './screens/desktop/DesktopOptions'
+import { DesktopEfficiency } from './screens/desktop/DesktopEfficiency'
+import { DesktopActivity } from './screens/desktop/DesktopActivity'
+import { DesktopSettings } from './screens/desktop/DesktopSettings'
+import { nowTime } from './screens/desktop/shared'
+import { useIsDesktop } from './useMediaQuery'
 
 type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'accounts' } | { name: 'account'; id: number } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
@@ -51,6 +65,8 @@ export default function App() {
   const [chooser, setChooser] = useState(false)
   const [expenseAdd, setExpenseAdd] = useState(0)
   const [form, setForm] = useState<{ kind: Kind; existing?: Asset } | null>(null)
+  const isDesktop = useIsDesktop()
+  const [expSub, setExpSub] = useState('операции за месяц')
 
   useEffect(() => {
     localStorage.setItem(ROUTE_KEY, JSON.stringify(route))
@@ -157,6 +173,123 @@ export default function App() {
 
   const openAdd = (kind: Kind) => { haptic(); setChooser(false); setForm({ kind }) }
 
+  const overlays = (
+    <>
+      {chooser && <AddChooser onPick={openAdd} onClose={() => setChooser(false)} />}
+      {form && (
+        <AssetForm
+          kind={form.kind}
+          existing={form.existing}
+          onCancel={() => setForm(null)}
+          onSaved={() => { setForm(null); void reload() }}
+        />
+      )}
+    </>
+  )
+
+  // On desktop the whole app lives in a persistent shell (sidebar + header);
+  // the mobile column/tab-bar is untouched below 900px.
+  if (isDesktop) {
+    const base = data.overview.baseCurrency
+    const navTo: Record<NavKey, Route> = {
+      home: { name: 'home' }, history: { name: 'history' }, expenses: { name: 'expenses' },
+      accounts: { name: 'accounts' }, goals: { name: 'goals' }, options: { name: 'options' },
+      efficiency: { name: 'efficiency' }, activity: { name: 'activity' }, settings: { name: 'more' },
+    }
+    const positionAsset = route.name === 'position' ? data.assets.find((a) => a.id === route.id) : undefined
+
+    let active: NavKey | null = null
+    let title = ''
+    let subtitle: string | undefined
+    let onBack: (() => void) | undefined
+    let content: ReactNode = null
+
+    switch (route.name) {
+      case 'home':
+        active = 'home'; title = 'Обзор'; subtitle = `обновлено сегодня в ${nowTime()}`
+        content = (
+          <DesktopOverview
+            overview={data.overview} assets={data.assets}
+            onOpenCategory={(k) => { haptic(); setRoute({ name: 'category', kind: k as Kind }) }}
+            onOpenAsset={(id) => { haptic(); setRoute({ name: 'position', id }) }}
+            onOpenAccounts={() => setRoute({ name: 'accounts' })}
+            onOpenOptions={() => setRoute({ name: 'options' })}
+            onOpenGoals={() => setRoute({ name: 'goals' })}
+            onOpenActivity={() => setRoute({ name: 'activity' })}
+          />
+        )
+        break
+      case 'history':
+        active = 'history'; title = 'Динамика'; subtitle = 'снимки капитала за каждый день'
+        content = <DesktopHistory base={base} />
+        break
+      case 'expenses':
+        active = 'expenses'; title = 'Расходы'; subtitle = expSub
+        content = <DesktopExpenses onMeta={setExpSub} />
+        break
+      case 'accounts':
+      case 'account':
+        active = 'accounts'; title = 'Счета'; subtitle = 'счета и движения'
+        content = <DesktopAccounts initialAccountId={route.name === 'account' ? route.id : undefined} onChanged={() => void reload()} />
+        break
+      case 'goals':
+        active = 'goals'; title = 'Цели'
+        content = <DesktopGoals />
+        break
+      case 'options':
+        active = 'options'; title = 'Опционы'
+        content = <DesktopOptions />
+        break
+      case 'efficiency':
+        active = 'efficiency'; title = 'Эффективность'; subtitle = 'доход, расходы и прирост капитала'
+        content = <DesktopEfficiency />
+        break
+      case 'activity':
+        active = 'activity'; title = 'Действия'; subtitle = 'журнал изменений капитала'
+        content = <DesktopActivity />
+        break
+      case 'more':
+        active = 'settings'; title = 'Настройки'; subtitle = 'валюта, курсы, автоматизация, данные'
+        content = <DesktopSettings baseCurrency={base} onChangeCurrency={changeCurrency} onRatesSaved={() => void reload()} />
+        break
+      case 'category':
+        active = 'home'; title = `Обзор / ${KIND_META[route.kind].label}`; onBack = back
+        content = (
+          <DesktopCategory
+            kind={route.kind} assets={data.assets} base={base}
+            onOpenAsset={(id) => { haptic(); setRoute({ name: 'position', id }) }}
+            onOpenAccount={(id) => { haptic(); setRoute({ name: 'account', id }) }}
+            onAdd={openAdd}
+          />
+        )
+        break
+      case 'position':
+        active = 'home'; onBack = back
+        title = positionAsset ? `${KIND_META[positionAsset.kind as Kind]?.label ?? 'Позиция'} / ${positionAsset.name}` : 'Позиция'
+        content = positionAsset
+          ? <DesktopPosition asset={positionAsset} base={base} onEdit={() => setForm({ kind: positionAsset.kind as Kind, existing: positionAsset })} onDelete={() => removeAsset(positionAsset.id)} onChanged={() => { void reload(); back() }} />
+          : <p className="muted">Позиция не найдена.</p>
+        break
+    }
+
+    return (
+      <>
+        <DesktopShell
+          active={active} title={title} subtitle={subtitle} onBack={onBack}
+          base={base} onChangeCurrency={changeCurrency} user={data.user}
+          onNav={(k) => setRoute(navTo[k])}
+          onAdd={openAdd}
+          onExpenseAdd={() => { setRoute({ name: 'expenses' }); setExpenseAdd((n) => n + 1) }}
+          onPayDebt={() => setRoute({ name: 'category', kind: 'debt' })}
+          onOpenChooser={() => setChooser(true)}
+        >
+          {content}
+        </DesktopShell>
+        {overlays}
+      </>
+    )
+  }
+
   return (
     <main className="screen">
       {route.name === 'home' && (
@@ -213,15 +346,7 @@ export default function App() {
         />
       )}
 
-      {chooser && <AddChooser onPick={openAdd} onClose={() => setChooser(false)} />}
-      {form && (
-        <AssetForm
-          kind={form.kind}
-          existing={form.existing}
-          onCancel={() => setForm(null)}
-          onSaved={() => { setForm(null); void reload() }}
-        />
-      )}
+      {overlays}
     </main>
   )
 }

@@ -168,7 +168,7 @@ function StackedBars({ comp }: { comp: Composition }) {
   )
 }
 
-function SnapshotSheet({
+export function SnapshotSheet({
   date, initial, initialNote, currency, onClose, onSaved,
 }: {
   date: string

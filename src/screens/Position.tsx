@@ -166,7 +166,7 @@ export function Position({
   )
 }
 
-function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => void; onPaid: () => void }) {
+export function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => void; onPaid: () => void }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
   const [accId, setAccId] = useState<number | null>(null)
   // Prefill with the debt's monthly payment — the amount you almost always pay.
@@ -206,7 +206,7 @@ function PaySheet({ asset, onClose, onPaid }: { asset: Asset; onClose: () => voi
   )
 }
 
-function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
+export function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
   const [accounts, setAccounts] = useState<Account[] | null>(null)
   const [accId, setAccId] = useState<number | null>(null)
   // Prefill with the expected monthly repayment when one is set.
@@ -255,7 +255,7 @@ function Row({ k, v, cls }: { k: string; v: string; cls?: string }) {
   )
 }
 
-function debtNote(a: Asset, outstanding: number, cur: string): string {
+export function debtNote(a: Asset, outstanding: number, cur: string): string {
   const scheme = a.debtScheme || 'accruing'
   if (scheme === 'annuity' || scheme === 'differentiated') {
     return 'Платёж идёт по графику — остаток уменьшается автоматически. Досрочно гасите — просто уменьшите остаток вручную.'
@@ -267,7 +267,7 @@ function debtNote(a: Asset, outstanding: number, cur: string): string {
   return `Остаток растёт примерно на ${money(perDay, cur)} в день по ставке ${a.ratePercent}%. Нажми «Внести платёж» — приложение само уменьшит остаток и продолжит начисление, вручную обновлять ничего не нужно.`
 }
 
-function badgeLine(a: Asset): string {
+export function badgeLine(a: Asset): string {
   const meta = KIND_META[(a.kind as keyof typeof KIND_META)] ?? KIND_META.cash
   if (a.kind === 'realestate') return `${meta.label} · ${a.status === 'rented' ? 'сдаётся' : 'своё'}`
   if (a.kind === 'investment' && a.subtype) return `${meta.label} · ${SUBTYPE_LABEL[a.subtype] ?? ''}`.trim()

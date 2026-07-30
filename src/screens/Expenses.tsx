@@ -130,22 +130,28 @@ export function Expenses({ addSignal }: { addSignal?: number }) {
 
           <label className="section-lbl">Операции</label>
           <div className="list">
-            {data.transactions.map((t) => (
-              <button key={t.id} className="li" onClick={() => remove(t)}>
-                <span className="li-mark" style={{ background: t.type === 'income' ? 'var(--pos)' : colorByCat[t.category] ?? 'var(--muted)' }}>
-                  {t.category.slice(0, 1)}
-                </span>
-                <span className="li-main">
-                  <span className="li-name">{t.category}</span>
-                  <span className="li-sub">{[dateShort(t.date), t.person, t.note].filter(Boolean).join(' · ')}</span>
-                </span>
-                <span className="li-amt">
-                  <span className={`li-a ${t.type === 'income' ? 'pos' : 'neg'}`}>
-                    {t.type === 'income' ? '+' : '−'}{money(t.amount, t.currency)}
+            {data.transactions.map((t) => {
+              const manual = t.source === 'manual'
+              const inner = (
+                <>
+                  <span className="li-mark" style={{ background: t.type === 'income' ? 'var(--pos)' : colorByCat[t.category] ?? 'var(--muted)' }}>
+                    {t.category.slice(0, 1)}
                   </span>
-                </span>
-              </button>
-            ))}
+                  <span className="li-main">
+                    <span className="li-name">{t.category}</span>
+                    <span className="li-sub">{[dateShort(t.date), t.person, t.note, manual ? '' : 'со счёта'].filter(Boolean).join(' · ')}</span>
+                  </span>
+                  <span className="li-amt">
+                    <span className={`li-a ${t.type === 'income' ? 'pos' : 'neg'}`}>
+                      {t.type === 'income' ? '+' : '−'}{money(t.amount, t.currency)}
+                    </span>
+                  </span>
+                </>
+              )
+              return manual
+                ? <button key={t.id} className="li" onClick={() => remove(t)}>{inner}</button>
+                : <div key={t.id} className="li static">{inner}</div>
+            })}
             {data.transactions.length === 0 && <div className="emptycat">Операций нет</div>}
           </div>
 

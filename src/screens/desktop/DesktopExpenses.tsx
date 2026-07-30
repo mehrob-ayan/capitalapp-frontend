@@ -86,7 +86,9 @@ export function DesktopExpenses({ onMeta }: { onMeta?: (sub: string) => void }) 
                 <span className="muted">{t.person || '—'}</span>
                 <span className="muted ell">{t.note || '—'}</span>
                 <span className={`r num ${t.type === 'income' ? 'pos' : 'neg'}`}>{t.type === 'income' ? '+' : '−'}{money(t.amount, t.currency)}</span>
-                <button className="dt-x" onClick={() => remove(t)} aria-label="Удалить">✕</button>
+                {t.source === 'manual'
+                  ? <button className="dt-x" onClick={() => remove(t)} aria-label="Удалить">✕</button>
+                  : <span className="dt-x" title="Из журнала счёта" style={{ opacity: 0.4 }}>↩</span>}
               </div>
             ))}
             {data && data.transactions.length === 0 && <p className="muted" style={{ padding: '14px 0' }}>За этот месяц операций нет.</p>}

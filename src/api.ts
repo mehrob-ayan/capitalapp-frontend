@@ -336,6 +336,11 @@ export const repayLent = (lentId: number, p: { amount: number; accountId: number
   request<void>(`/api/v1/lent/${lentId}/repay`, { method: 'POST', body: JSON.stringify(p) })
 export const getLentRepayments = (lentId: number) => request<AccountEntry[]>(`/api/v1/lent/${lentId}/repayments`)
 
+export interface SchedPayday { date: string; amount: number; posted: boolean }
+export interface SchedMonth { year: number; month: number; advance: SchedPayday | null; remainder: SchedPayday | null }
+export interface SalarySchedule { hasSalary: boolean; currency: string; monthly: number; total12: number; months: SchedMonth[] }
+export const getSalarySchedule = () => request<SalarySchedule>('/api/v1/salary/schedule')
+
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })
 export const updateGoal = (id: number, g: GoalInput) => request<Goal>(`/api/v1/goals/${id}`, { method: 'PATCH', body: JSON.stringify(g) })

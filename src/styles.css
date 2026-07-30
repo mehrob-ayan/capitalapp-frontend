@@ -312,7 +312,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   .dt-bell:hover { background: var(--card-2); }
   .dt-bell svg { width: 18px; height: 18px; }
 
-  .dt-work { flex: 1; padding: 20px 28px 24px; overflow: hidden; min-height: 0; }
+  .dt-work { flex: 1; display: flex; flex-direction: column; padding: 20px 28px 24px; overflow: hidden; min-height: 0; }
+  .dt-work > .dt-grid { flex: 1; }
   .dt-grid { display: grid; gap: 20px; height: 100%; min-height: 0; }
   .dt-grid.c-rail { grid-template-columns: 1fr 320px; }
   .dt-grid.c-rail-lg, .dt-grid.c-pos { grid-template-columns: 1fr 340px; }
@@ -323,7 +324,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   .dt-back { background: none; border: 0; color: var(--brand); font-size: 26px; line-height: 1; cursor: pointer; padding: 0 6px 0 0; }
   .dt-main-col { display: flex; flex-direction: column; gap: 16px; min-height: 0; min-width: 0; }
   .dt-scrollcol { overflow-y: auto; min-height: 0; }
-  .dt-full { overflow-y: auto; min-height: 0; }
+  .dt-full { flex: 1; overflow-y: auto; min-height: 0; }
   .dt-pad { padding: 18px 24px; }
   .dt-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
   .dt-card-ttl { font-size: 14px; font-weight: 700; }
@@ -469,8 +470,10 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
    area scroll instead of the inner table/list bodies. */
 @media (min-width: 900px) and (max-width: 1199px) {
   .dt-work { overflow-y: auto; }
+  .dt-work > .dt-grid { flex: none; }
   .dt-grid { grid-template-columns: 1fr !important; height: auto; }
   .dt-comp, .dt-act { flex: none; }
+  .dt-full { flex: none; overflow: visible; }
   .dt-tbody, .dt-feed, .dt-scrollcol { overflow: visible; }
 }
 
@@ -588,3 +591,30 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   .dt-metric-v { font-size: 15px; }
   .dt-work { padding: 16px 18px 20px; }
 }
+
+/* ---- salary calendar (mobile + desktop) ---- */
+.salcal-lead { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 16px; max-width: 66ch; }
+.salcal-sum { display: flex; flex-wrap: wrap; gap: 10px; }
+.salcal-sum > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.salcal-sum .k { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.salcal-sum .v { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: 3px; }
+.salcal-legend { display: flex; gap: 16px; margin: 14px 0 20px; font-size: 13px; color: var(--muted); }
+.salcal-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+.salcal-legend i.adv { background: var(--pos); }
+.salcal-legend i.rem { background: var(--brand); }
+.salcal-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.salcal-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 15px; display: flex; flex-direction: column; }
+.salcal-card h3 { margin: 0 0 10px; font-size: 15px; }
+.salcal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.salcal-wd { font-size: 9.5px; color: var(--muted); text-align: center; padding-bottom: 3px; font-weight: 700; }
+.salcal-cell { height: 26px; display: grid; place-items: center; font-size: 11px; border-radius: 7px; font-variant-numeric: tabular-nums; }
+.salcal-cell.empty { visibility: hidden; }
+.salcal-cell.adv { background: var(--pos); color: #fff; font-weight: 700; }
+.salcal-cell.rem { background: var(--brand); color: var(--brand-ink); font-weight: 700; }
+.salcal-pds { margin-top: auto; padding-top: 11px; display: flex; flex-direction: column; gap: 6px; }
+.salcal-pd { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+.salcal-pd span { color: var(--muted); }
+.salcal-pd b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.salcal-pd.adv b { color: var(--pos); }
+.salcal-pd.rem b { color: var(--brand); }
+.salcal-note { max-width: 74ch; }

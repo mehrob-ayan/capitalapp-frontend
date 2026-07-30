@@ -20,6 +20,7 @@ import { ActivityScreen } from './screens/ActivityScreen'
 import { EfficiencyScreen } from './screens/EfficiencyScreen'
 import { AccountsScreen } from './screens/AccountsScreen'
 import { Expenses } from './screens/Expenses'
+import { SalaryCalendar } from './screens/SalaryCalendar'
 import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 import { DesktopOverview } from './screens/DesktopOverview'
@@ -34,10 +35,11 @@ import { DesktopOptions } from './screens/desktop/DesktopOptions'
 import { DesktopEfficiency } from './screens/desktop/DesktopEfficiency'
 import { DesktopActivity } from './screens/desktop/DesktopActivity'
 import { DesktopSettings } from './screens/desktop/DesktopSettings'
+import { DesktopSalary } from './screens/desktop/DesktopSalary'
 import { nowTime } from './screens/desktop/shared'
 import { useIsDesktop } from './useMediaQuery'
 
-type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'accounts' } | { name: 'account'; id: number } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
+type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'salary' } | { name: 'accounts' } | { name: 'account'; id: number } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
 // Persist the current screen so a page refresh doesn't jump back to Overview.
 const ROUTE_KEY = 'capital_route'
@@ -135,6 +137,7 @@ export default function App() {
     if (route.name === 'options') return setRoute({ name: 'more' })
     if (route.name === 'activity') return setRoute({ name: 'more' })
     if (route.name === 'efficiency') return setRoute({ name: 'more' })
+    if (route.name === 'salary') return setRoute({ name: 'more' })
     if (route.name === 'accounts') return setRoute({ name: 'more' })
   }, [form, chooser, route, data])
 
@@ -194,7 +197,7 @@ export default function App() {
     const navTo: Record<NavKey, Route> = {
       home: { name: 'home' }, history: { name: 'history' }, expenses: { name: 'expenses' },
       accounts: { name: 'accounts' }, goals: { name: 'goals' }, options: { name: 'options' },
-      efficiency: { name: 'efficiency' }, activity: { name: 'activity' }, settings: { name: 'more' },
+      efficiency: { name: 'efficiency' }, salary: { name: 'salary' }, activity: { name: 'activity' }, settings: { name: 'more' },
     }
     const positionAsset = route.name === 'position' ? data.assets.find((a) => a.id === route.id) : undefined
 
@@ -243,6 +246,10 @@ export default function App() {
       case 'efficiency':
         active = 'efficiency'; title = 'Эффективность'; subtitle = 'доход, расходы и прирост капитала'
         content = <DesktopEfficiency />
+        break
+      case 'salary':
+        active = 'salary'; title = 'Календарь зарплаты'; subtitle = 'когда придёт аванс и остаток'
+        content = <DesktopSalary />
         break
       case 'activity':
         active = 'activity'; title = 'Действия'; subtitle = 'журнал изменений капитала'
@@ -324,6 +331,7 @@ export default function App() {
       {route.name === 'efficiency' && <EfficiencyScreen onBack={back} />}
       {route.name === 'accounts' && <AccountsScreen onBack={back} onChanged={() => void reload()} />}
       {route.name === 'account' && <AccountsScreen initialAccountId={route.id} onBack={back} onChanged={() => void reload()} />}
+      {route.name === 'salary' && <SalaryCalendar onBack={back} />}
 
       {route.name === 'more' && (
         <Settings
@@ -335,6 +343,7 @@ export default function App() {
           onOpenActivity={() => setRoute({ name: 'activity' })}
           onOpenEfficiency={() => setRoute({ name: 'efficiency' })}
           onOpenAccounts={() => setRoute({ name: 'accounts' })}
+          onOpenSalary={() => setRoute({ name: 'salary' })}
         />
       )}
 

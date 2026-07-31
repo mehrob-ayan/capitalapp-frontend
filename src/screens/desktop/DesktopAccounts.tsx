@@ -3,7 +3,7 @@ import {
   getAccounts, createAccount, deleteAccount, getAccountEntries, addAccountEntry, updateAccountEntry, deleteAccountEntry,
   type Account, type AccountEntries, type AccountEntry,
 } from '../../api'
-import { money, dateShort } from '../../format'
+import { money, dateTime } from '../../format'
 import { CURRENCIES } from '../../kinds'
 import { Sheet } from '../../components/Sheet'
 import { MoneyInput } from '../../components/MoneyInput'
@@ -79,7 +79,7 @@ export function DesktopAccounts({ initialAccountId, onChanged }: { initialAccoun
             <div className="dt-tbody">
               {ledger.entries.map((e) => (
                 <div key={e.id} className="dt-trow dt-led-grid static">
-                  <span className="muted">{dateShort(e.date).split(' ').slice(0, 2).join(' ')}</span>
+                  <span className="muted">{dateTime(e.createdAt)}</span>
                   <span>{e.note || (e.kind === 'income' ? 'Доход' : 'Списание')}</span>
                   <span className="muted">{sourceTag(e.source)}</span>
                   <span className={`r num ${e.kind === 'income' ? 'pos' : 'neg'}`}>{e.kind === 'income' ? '+' : '−'}{money(e.amount, cur)}</span>

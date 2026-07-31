@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAssetHistory, getAccounts, payDebt, getDebtPayments, repayLent, getLentRepayments, type Asset, type AssetHistory, type Account, type AccountEntry } from '../api'
+import { getAssetHistory, getAccounts, payDebt, getDebtPayments, repayLent, getLentRepayments, topupDeposit, type Asset, type AssetHistory, type Account, type AccountEntry } from '../api'
 import { KIND_META, kindColor } from '../kinds'
 import { money, percent, monthYear, duration, dateShort } from '../format'
 import { TopBar } from '../components/TopBar'
@@ -31,6 +31,7 @@ export function Position({
   onChanged?: () => void
 }) {
   const [paying, setPaying] = useState(false)
+  const [topup, setTopup] = useState(false)
   const meta = KIND_META[(asset.kind as keyof typeof KIND_META)] ?? KIND_META.cash
   const cur = asset.currency
   const isDebt = asset.kind === 'debt'
@@ -155,13 +156,15 @@ export function Position({
 
       {isDebt && <button className="mainbtn" onClick={() => setPaying(true)}>Внести платёж</button>}
       {isLent && <button className="mainbtn" onClick={() => setPaying(true)}>Получить возврат</button>}
-      <button className={isDebt || isLent ? 'linkbtn' : 'mainbtn'} onClick={onEdit}>Изменить</button>
+      {isDeposit && <button className="mainbtn" onClick={() => setTopup(true)}>Пополнить</button>}
+      <button className={isDebt || isLent || isDeposit ? 'linkbtn' : 'mainbtn'} onClick={onEdit}>Изменить</button>
       <button className="linkbtn danger" onClick={onDelete}>Удалить</button>
 
       {paying && (isLent
         ? <RepaySheet asset={asset} onClose={() => setPaying(false)} onDone={() => { setPaying(false); onChanged?.(); onBack() }} />
         : <PaySheet asset={asset} onClose={() => setPaying(false)} onPaid={() => { setPaying(false); onChanged?.(); onBack() }} />
       )}
+      {topup && <TopUpSheet asset={asset} onClose={() => setTopup(false)} onDone={() => { setTopup(false); onChanged?.() }} />}
     </div>
   )
 }
@@ -242,6 +245,28 @@ export function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: 
           <button className="mainbtn" disabled={busy || !accId} onClick={save}>{busy ? 'Проведение…' : 'Получить'}</button>
         </>
       )}
+    </Sheet>
+  )
+}
+
+export function TopUpSheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
+  const [amount, setAmount] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function save() {
+    const amt = parseFloat(amount)
+    if (!Number.isFinite(amt) || amt <= 0) return
+    setBusy(true)
+    try { await topupDeposit(asset.id, amt); onDone() } finally { setBusy(false) }
+  }
+
+  return (
+    <Sheet title="Пополнить вклад" subtitle={asset.name} onClose={onClose}>
+      <div className="fld"><label>Сумма пополнения ({asset.currency})</label><div className="inp-wrap">
+        <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
+      </div></div>
+      <p className="note">Добавится к текущему балансу вклада. Уже накопленные проценты сохраняются, дальше капают на новую сумму.</p>
+      <button className="mainbtn" disabled={busy} onClick={save}>{busy ? 'Пополнение…' : 'Пополнить'}</button>
     </Sheet>
   )
 }

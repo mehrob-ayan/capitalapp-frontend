@@ -44,6 +44,15 @@ export function dateShort(iso: string): string {
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`
 }
 
+/** "18 июл, 14:05" — date with time, for ordering same-day ledger entries. */
+export function dateTime(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}, ${hh}:${mm}`
+}
+
 /** "15 лет 2 мес" from a month count. */
 export function duration(months: number): string {
   const y = Math.floor(months / 12)

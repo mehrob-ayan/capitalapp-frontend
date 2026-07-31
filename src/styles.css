@@ -350,7 +350,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
   .dt-chips.wrap { flex-wrap: wrap; }
   .dt-comp-grid { grid-template-columns: 1.6fr 0.7fr 1fr 1fr 1fr 24px; }
   .dt-exp-grid { grid-template-columns: 78px 1.2fr 0.8fr 1.4fr 110px 28px; }
-  .dt-led-grid { grid-template-columns: 100px 1.6fr 1fr 130px 28px; }
+  .dt-led-grid { grid-template-columns: 128px 1.6fr 1fr 130px 28px; }
   .dt-cat-grid { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 24px; }
   .dt-opt-tgrid { grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr 1.2fr 24px; }
   .dt-act-grid { grid-template-columns: 1.5fr 1.5fr 150px 130px 200px; }

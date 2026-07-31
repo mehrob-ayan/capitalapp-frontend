@@ -3,7 +3,7 @@ import {
   getAccounts, createAccount, deleteAccount, getAccountEntries, addAccountEntry, updateAccountEntry, deleteAccountEntry,
   type Account, type AccountEntries, type AccountEntry,
 } from '../api'
-import { money, dateShort } from '../format'
+import { money, dateTime } from '../format'
 import { CURRENCIES } from '../kinds'
 import { TopBar } from '../components/TopBar'
 import { Sheet } from '../components/Sheet'
@@ -93,7 +93,7 @@ function Ledger({ id, onBack, onChanged }: { id: number; onBack: () => void; onC
               >
                 <span className="li-main">
                   <span className="li-name">{e.note || (e.kind === 'income' ? 'Доход' : 'Списание')}</span>
-                  <span className="li-sub">{dateShort(e.date)}{sourceTag(e.source)}</span>
+                  <span className="li-sub">{dateTime(e.createdAt)}{sourceTag(e.source)}</span>
                 </span>
                 <span className="li-amt">
                   <span className={`li-a ${e.kind === 'income' ? 'pos' : 'neg'}`}>

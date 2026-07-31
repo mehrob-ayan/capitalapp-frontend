@@ -3,7 +3,7 @@ import { getAssetHistory, getDebtPayments, getLentRepayments, type Asset, type A
 import { KIND_META, kindColor } from '../../kinds'
 import { money, percent, monthYear, duration, dateShort } from '../../format'
 import { AreaChart } from '../../components/AreaChart'
-import { PaySheet, RepaySheet, badgeLine, debtNote } from '../Position'
+import { PaySheet, RepaySheet, TopUpSheet, badgeLine, debtNote } from '../Position'
 
 const VALUE_CHART_KINDS = new Set(['realestate', 'car', 'investment', 'metals'])
 
@@ -34,6 +34,7 @@ export function DesktopPosition({ asset, base, onEdit, onDelete, onChanged }: {
   const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
 
   const [paying, setPaying] = useState(false)
+  const [topup, setTopup] = useState(false)
   const [history, setHistory] = useState<AssetHistory | null>(null)
   const [payments, setPayments] = useState<AccountEntry[]>([])
 
@@ -59,6 +60,7 @@ export function DesktopPosition({ asset, base, onEdit, onDelete, onChanged }: {
             <div className="dt-spacer" />
             {isDebt && <button className="dt-btn-brand" onClick={() => setPaying(true)}>Внести платёж</button>}
             {isLent && <button className="dt-btn-brand" onClick={() => setPaying(true)}>Получить возврат</button>}
+            {isDeposit && <button className="dt-btn-brand" onClick={() => setTopup(true)}>Пополнить</button>}
             <button className="dt-btn-ghost" onClick={onEdit}>Изменить</button>
             <button className="dt-btn-ghost danger" onClick={onDelete}>Удалить</button>
           </div>
@@ -177,6 +179,7 @@ export function DesktopPosition({ asset, base, onEdit, onDelete, onChanged }: {
         ? <RepaySheet asset={asset} onClose={() => setPaying(false)} onDone={() => { setPaying(false); onChanged() }} />
         : <PaySheet asset={asset} onClose={() => setPaying(false)} onPaid={() => { setPaying(false); onChanged() }} />
       )}
+      {topup && <TopUpSheet asset={asset} onClose={() => setTopup(false)} onDone={() => { setTopup(false); onChanged() }} />}
     </div>
   )
 }

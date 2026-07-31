@@ -141,6 +141,8 @@ export const updateAsset = (id: number, input: AssetInput) =>
   request<Asset>(`/api/v1/assets/${id}`, { method: 'PATCH', body: JSON.stringify(input) })
 export const deleteAsset = (id: number) =>
   request<void>(`/api/v1/assets/${id}`, { method: 'DELETE' })
+export const topupDeposit = (id: number, amount: number) =>
+  request<void>(`/api/v1/assets/${id}/topup`, { method: 'POST', body: JSON.stringify({ amount }) })
 
 export const getRates = () => request<Record<string, number>>('/api/v1/rates')
 export const setRates = (rates: Record<string, number>) =>

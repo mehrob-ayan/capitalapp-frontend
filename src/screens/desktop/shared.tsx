@@ -62,8 +62,13 @@ export function CapitalChart({ points, goal, viewH = 168 }: { points: History['p
   const padY = 16
   const values = points.map((p) => p.netWorth)
   const showGoal = typeof goal === 'number' && goal > 0
-  const min = Math.min(...values, showGoal ? (goal as number) : Infinity)
-  const max = Math.max(...values, showGoal ? (goal as number) : -Infinity)
+  // Scale to the capital data only — a far-off goal must NOT stretch the axis and
+  // flatten the real curve. The goal line is clamped into view instead.
+  const dataMin = Math.min(...values)
+  const dataMax = Math.max(...values)
+  const pad = (dataMax - dataMin) * 0.15 || Math.abs(dataMax) * 0.05 || 1
+  const min = dataMin - pad
+  const max = dataMax + pad
   const span = max - min || 1
   const n = values.length
   const stepX = W / (n - 1)
@@ -72,7 +77,7 @@ export function CapitalChart({ points, goal, viewH = 168 }: { points: History['p
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
   const area = `${line} L${W},${viewH} L0,${viewH} Z`
   const last = pts[pts.length - 1]
-  const goalY = showGoal ? y(goal as number) : 0
+  const goalY = showGoal ? Math.max(3, Math.min(viewH - 3, y(goal as number))) : 0
   const grid = [0.25, 0.5, 0.75].map((f) => Math.round(f * viewH))
   const axisIdx = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (n - 1)))
 

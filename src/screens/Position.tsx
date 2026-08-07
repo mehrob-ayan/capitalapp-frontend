@@ -41,7 +41,10 @@ export function Position({
   const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
   // Deposits accrue: the "value now" is the compounded balance, not the entered principal.
   const accrued = asset.metrics.accruedValue
-  const depositInterest = isDeposit ? accrued - asset.value : 0
+  // Тело = total contributions (invested); interest = accrued − contributions, so
+  // it survives capitalization/top-ups. Fall back to value for legacy rows.
+  const depositBody = isDeposit ? (asset.invested > 0 ? asset.invested : asset.value) : asset.value
+  const depositInterest = isDeposit ? accrued - depositBody : 0
 
   const [history, setHistory] = useState<AssetHistory | null>(null)
   useEffect(() => {
@@ -107,7 +110,7 @@ export function Position({
           {isDeposit ? (
             <>
               <div className="stat">
-                <Row k="Тело вклада" v={money(asset.value, cur)} />
+                <Row k="Вложено" v={money(depositBody, cur)} />
                 <Row k="Ставка" v={asset.ratePercent > 0 ? `${asset.ratePercent}% годовых` : 'без процентов'} />
                 {depositInterest > 0 && <Row k="Начислено процентов" v={`+${money(depositInterest, cur)}`} cls="pos" />}
                 {asset.ratePercent > 0 && <Row k="В день" v={`~${money((accrued * asset.ratePercent) / 100 / 365, cur)}`} cls="pos" />}

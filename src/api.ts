@@ -343,6 +343,11 @@ export interface SchedMonth { year: number; month: number; advance: SchedPayday 
 export interface SalarySchedule { hasSalary: boolean; currency: string; monthly: number; total12: number; months: SchedMonth[] }
 export const getSalarySchedule = () => request<SalarySchedule>('/api/v1/salary/schedule')
 
+export interface Advice { markdown: string; generatedAt: string }
+export const auditCredit = (id: number) => request<Advice>(`/api/v1/advisor/credit/${id}`, { method: 'POST' })
+export const auditPortfolio = () => request<Advice>('/api/v1/advisor/portfolio', { method: 'POST' })
+export const getBrief = (refresh = false) => request<Advice>(`/api/v1/advisor/brief${refresh ? '?refresh=1' : ''}`)
+
 export const getGoals = () => request<Goal[]>('/api/v1/goals')
 export const createGoal = (g: GoalInput) => request<Goal>('/api/v1/goals', { method: 'POST', body: JSON.stringify(g) })
 export const updateGoal = (id: number, g: GoalInput) => request<Goal>(`/api/v1/goals/${id}`, { method: 'PATCH', body: JSON.stringify(g) })

@@ -618,3 +618,29 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 .salcal-pd.adv b { color: var(--pos); }
 .salcal-pd.rem b { color: var(--brand); }
 .salcal-note { max-width: 74ch; }
+
+/* ---- advisor (Claude audit) ---- */
+.md { font-size: 14px; line-height: 1.55; color: var(--text); }
+.md-h { font-size: 14px; font-weight: 700; margin: 14px 0 6px; }
+.md-p { margin: 8px 0; }
+.md-ul { margin: 6px 0; padding-left: 18px; }
+.md-ul li { margin: 3px 0; }
+.md em { color: var(--muted); font-style: italic; }
+.advisor-loading { padding: 12px 0; }
+.advisor-idle { display: flex; flex-direction: column; gap: 12px; }
+.advisor-card { max-width: 760px; }
+
+/* ---- helper (Капиталик) chat bubble ---- */
+.helper { display: flex; gap: 10px; background: var(--card-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px 13px; margin: 8px 0 14px; }
+.helper-av { width: 34px; height: 34px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+.helper-body { flex: 1; min-width: 0; }
+.helper-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.helper-name { font-size: 12.5px; font-weight: 700; }
+.helper-refresh { margin-left: auto; border: 0; background: none; color: var(--brand); font-size: 11.5px; font-weight: 600; cursor: pointer; }
+.helper-loading { font-size: 13px; margin: 2px 0; }
+.helper-err { font-size: 13px; color: var(--neg); margin: 2px 0; }
+.helper .md { font-size: 13.5px; }
+.helper .md-h { font-size: 13px; margin: 10px 0 4px; }
+.helper .md-p { margin: 6px 0; }
+/* On the desktop overview the helper sits in its own card — flatten the inner bubble. */
+.dt-card .helper { background: none; border: 0; padding: 0; margin: 0; }

@@ -9,7 +9,7 @@ const CAPITAL_NAV: [NavKey, string][] = [
   ['home', 'Обзор'], ['history', 'Динамика'], ['expenses', 'Расходы'],
   ['accounts', 'Счета'], ['goals', 'Цели'], ['options', 'Опционы'], ['efficiency', 'Эффективность'], ['salary', 'Зарплата'],
 ]
-const JOURNAL_NAV: [NavKey, string][] = [['activity', 'Действия'], ['settings', 'Настройки']]
+const JOURNAL_NAV: [NavKey, string][] = [['advisor', 'Помощник'], ['activity', 'Действия'], ['settings', 'Настройки']]
 
 export interface DesktopShellProps {
   active: NavKey | null

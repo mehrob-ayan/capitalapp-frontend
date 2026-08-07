@@ -17,6 +17,7 @@ export function Settings({
   onOpenEfficiency,
   onOpenAccounts,
   onOpenSalary,
+  onOpenAdvisor,
 }: {
   baseCurrency: string
   onChangeCurrency: (c: string) => void
@@ -27,6 +28,7 @@ export function Settings({
   onOpenEfficiency: () => void
   onOpenAccounts: () => void
   onOpenSalary: () => void
+  onOpenAdvisor: () => void
 }) {
   const [draft, setDraft] = useState<Record<string, string> | null>(null)
   const [saving, setSaving] = useState(false)
@@ -160,7 +162,10 @@ export function Settings({
         <span>🗓️ Календарь зарплаты</span><span className="chev">›</span>
       </button>
 
-      <label className="section-lbl">Действия</label>
+      <label className="section-lbl">Журнал</label>
+      <button className="nav-row" onClick={onOpenAdvisor}>
+        <span>🤖 Помощник Капиталик</span><span className="chev">›</span>
+      </button>
       <button className="nav-row" onClick={onOpenActivity}>
         <span>🕘 Действия</span><span className="chev">›</span>
       </button>

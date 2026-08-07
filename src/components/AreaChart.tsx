@@ -8,10 +8,14 @@ export function AreaChart({ values, goal }: { values: number[]; goal?: number })
   const W = 300
   const H = 120
   const pad = 8
-  // Include the goal in the scale so its line stays on-chart (with headroom).
+  // Scale to the data only — a far-off goal (e.g. $1M vs $117k now) must not
+  // stretch the axis and flatten the real curve. The goal line is clamped in.
   const showGoal = typeof goal === 'number' && goal > 0
-  const min = Math.min(...values, showGoal ? goal : Infinity)
-  const max = Math.max(...values, showGoal ? goal : -Infinity)
+  const dataMin = Math.min(...values)
+  const dataMax = Math.max(...values)
+  const headroom = (dataMax - dataMin) * 0.15 || Math.abs(dataMax) * 0.05 || 1
+  const min = dataMin - headroom
+  const max = dataMax + headroom
   const span = max - min || 1
   const stepX = (W - pad * 2) / (values.length - 1)
   const y = (v: number) => H - pad - ((v - min) / span) * (H - pad * 2)
@@ -20,7 +24,7 @@ export function AreaChart({ values, goal }: { values: number[]; goal?: number })
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')
   const area = `${line} L${pts[pts.length - 1][0].toFixed(1)},${H} L${pts[0][0].toFixed(1)},${H} Z`
   const last = pts[pts.length - 1]
-  const goalY = showGoal ? y(goal as number) : 0
+  const goalY = showGoal ? Math.max(pad, Math.min(H - pad, y(goal as number))) : 0
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="chart-svg" role="img" aria-label="График капитала">

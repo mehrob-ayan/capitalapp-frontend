@@ -30,7 +30,8 @@ export function DesktopPosition({ asset, base, onEdit, onDelete, onChanged }: {
   const isDeposit = asset.kind === 'deposit'
   const loan = asset.metrics.loan
   const accrued = asset.metrics.accruedValue
-  const depositInterest = isDeposit ? accrued - asset.value : 0
+  const depositBody = isDeposit ? (asset.invested > 0 ? asset.invested : asset.value) : asset.value
+  const depositInterest = isDeposit ? accrued - depositBody : 0
   const showValueChart = VALUE_CHART_KINDS.has(asset.kind)
 
   const [paying, setPaying] = useState(false)
@@ -100,7 +101,7 @@ export function DesktopPosition({ asset, base, onEdit, onDelete, onChanged }: {
               </>
             ) : isDeposit ? (
               <>
-                <PRow k="Тело вклада" v={money(asset.value, cur)} />
+                <PRow k="Вложено" v={money(depositBody, cur)} />
                 <PRow k="Ставка" v={asset.ratePercent > 0 ? `${asset.ratePercent}% годовых` : 'без процентов'} />
                 {depositInterest > 0 && <PRow k="Начислено процентов" v={`+${money(depositInterest, cur)}`} cls="pos" />}
                 {asset.ratePercent > 0 && <PRow k="В день" v={`~${money((accrued * asset.ratePercent) / 100 / 365, cur)}`} cls="pos" />}

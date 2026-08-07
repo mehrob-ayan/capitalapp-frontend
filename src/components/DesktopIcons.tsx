@@ -9,7 +9,7 @@ const svg = (children: ReactNode, strokeWidth = 1.8) => (
   </svg>
 )
 
-export type NavIconKey = 'home' | 'history' | 'expenses' | 'accounts' | 'goals' | 'options' | 'efficiency' | 'salary' | 'activity' | 'settings'
+export type NavIconKey = 'home' | 'history' | 'expenses' | 'accounts' | 'goals' | 'options' | 'efficiency' | 'salary' | 'advisor' | 'activity' | 'settings'
 
 export const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   home: svg(<><path d="M4 11l8-6 8 6" /><path d="M6 10v9h12v-9" /></>),
@@ -20,6 +20,7 @@ export const NAV_ICONS: Record<NavIconKey, ReactNode> = {
   options: svg(<><path d="M4 16l5-5 3 3 7-8" /><path d="M17 6h4v4" /></>),
   efficiency: svg(<><path d="M5 19a8 8 0 1 1 14 0" /><path d="M12 19l4-6" /></>),
   salary: svg(<><rect x="3" y="4.5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v3M16 3v3" /></>),
+  advisor: svg(<><path d="M12 3l7 3v5c0 4.4-3 7.4-7 8.5C8 21.4 5 18.4 5 14V6z" /><path d="M9.5 12l2 2 3.5-4" /></>),
   activity: svg(<><circle cx="12" cy="12" r="8" /><path d="M12 8v4l3 2" /></>),
   settings: svg(<><path d="M4 7h9M17 7h3" /><circle cx="15" cy="7" r="2" /><path d="M4 17h3M11 17h9" /><circle cx="9" cy="17" r="2" /></>),
 }

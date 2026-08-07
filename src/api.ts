@@ -281,12 +281,17 @@ export interface OptionGrant {
   name: string
   quantity: number
   unitPrice: number
+  strike: number
+  marketPrice: number
   currency: string
   grantDate: string
   vestMonths: number
+  fullVestDate?: string
+  exerciseDeadline?: string
   status: OptionStatus
   vestDate: string
   valueBase: number
+  underwater: boolean
 }
 export interface OptionsList {
   baseCurrency: string
@@ -300,9 +305,13 @@ export interface OptionInput {
   name: string
   quantity: number
   unitPrice: number
+  strike?: number
+  marketPrice?: number
   currency: string
   grantDate: string
   vestMonths: number
+  fullVestDate?: string | null
+  exerciseDeadline?: string | null
 }
 export const getOptions = () => request<OptionsList>('/api/v1/options')
 export const createOption = (o: OptionInput) =>

@@ -6,7 +6,6 @@ import {
 import { DEBT_SCHEMES, KIND_META, kindColor } from '../kinds'
 import { money, signedMoney, duration } from '../format'
 import { CapitalChart, GoalRing, signedPct, activityDot, compactDate } from './desktop/shared'
-import { HelperCard } from '../components/HelperCard'
 
 const PERIODS: [string, string][] = [['1m', '1М'], ['6m', '6М'], ['1y', '1Г'], ['all', 'Всё']]
 const PERIOD_LABEL: Record<string, string> = { '1m': 'за месяц', '6m': 'за полгода', '1y': 'за год', all: 'за всё время' }
@@ -90,8 +89,7 @@ export function DesktopOverview(props: DesktopOverviewProps) {
 
   return (
     <div className="dt-grid c-rail">
-      <div className="dt-main-col">
-        <section className="dt-card dt-pad"><HelperCard /></section>
+      <div className="dt-main-col dt-scrollcol">
         <section className="dt-card dt-cap">
           <div className="dt-cap-top">
             <div className="dt-cap-l">

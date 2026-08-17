@@ -1,7 +1,6 @@
 import type { Overview } from '../api'
 import { CURRENCIES, kindColor } from '../kinds'
 import { money, signedMoney } from '../format'
-import { HelperCard } from '../components/HelperCard'
 
 export function Dashboard({
   overview,
@@ -34,8 +33,6 @@ export function Dashboard({
           </button>
         ))}
       </div>
-
-      <HelperCard />
 
       <div className="eyebrow">Чистый капитал</div>
       <div className="hero">{money(overview.netWorth, cur)}</div>

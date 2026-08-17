@@ -26,6 +26,7 @@ import { BottomNav, type Tab } from './components/BottomNav'
 import { TopBar } from './components/TopBar'
 import { DesktopOverview } from './screens/DesktopOverview'
 import { DesktopShell, type NavKey } from './components/DesktopShell'
+import { HelperWidget } from './components/HelperWidget'
 import { DesktopHistory } from './screens/desktop/DesktopHistory'
 import { DesktopExpenses } from './screens/desktop/DesktopExpenses'
 import { DesktopAccounts } from './screens/desktop/DesktopAccounts'
@@ -181,6 +182,7 @@ export default function App() {
 
   const overlays = (
     <>
+      <HelperWidget />
       {chooser && <AddChooser onPick={openAdd} onClose={() => setChooser(false)} />}
       {form && (
         <AssetForm

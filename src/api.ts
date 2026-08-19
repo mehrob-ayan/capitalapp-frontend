@@ -163,15 +163,26 @@ export const getHistory = (period: string, currency?: string) =>
 export const setIncome = (monthlyIncome: number, incomeCurrency: string) =>
   request<User>('/api/v1/me', { method: 'PATCH', body: JSON.stringify({ monthlyIncome, incomeCurrency }) })
 
-export interface EffMonth { month: string; growth: number; share: number }
+export interface EffMonth { month: string; growth: number; share: number; capShare: number }
 export interface Efficiency {
   baseCurrency: string
   hasIncome: boolean
   monthlyIncome: number
   monthExpenses: number
   capitalGrowth: number
+  inflow: number
+  spent: number
   capitalShare: number
   savingsRate: number | null
+  debtPaymentsMonthly: number
+  debtLoadPct: number
+  interestPaidMonthly: number
+  interestEarnedMonthly: number
+  netInterestMonthly: number
+  liquid: number
+  monthlyBurn: number
+  runwayMonths: number
+  leverage: number
   trend: EffMonth[]
 }
 export const getEfficiency = () => request<Efficiency>('/api/v1/efficiency')

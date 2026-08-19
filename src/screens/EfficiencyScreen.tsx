@@ -7,6 +7,14 @@ import { TopBar } from '../components/TopBar'
 import { Sheet } from '../components/Sheet'
 import { MoneyInput } from '../components/MoneyInput'
 
+// "0.02 мес" reads as nothing; show a friendly runway label.
+export function runwayText(m: number): string {
+  if (m <= 0) return '—'
+  if (m < 1) return 'меньше месяца'
+  if (m >= 12) return `${Math.floor(m / 12)} г ${Math.round(m % 12)} мес`
+  return `${Math.round(m * 10) / 10} мес`
+}
+
 export function EfficiencyScreen({ onBack }: { onBack?: () => void }) {
   const [data, setData] = useState<Efficiency | null>(null)
   const [me, setMe] = useState<User | null>(null)
@@ -35,35 +43,55 @@ export function EfficiencyScreen({ onBack }: { onBack?: () => void }) {
 
       {data && data.hasIncome && (
         <>
-          <div className="eyebrow">В капитал из дохода · ~30 дней</div>
+          <div className="eyebrow">В капитал со счёта · за месяц</div>
           <div className="ring-row">
             <Ring percent={Math.max(0, data.capitalShare)} />
             <div>
-              <div className={`hero small ${data.capitalShare >= 0 ? 'pos' : 'neg'}`}>{percent(data.capitalShare, false)}</div>
-              <small className="muted">прирост капитала ÷ доход</small>
+              <div className="hero small pos">{percent(data.capitalShare, false)}</div>
+              <small className="muted">осталось капиталом от поступлений</small>
             </div>
           </div>
 
           <div className="stat">
-            <div className="stat-r"><div className="stat-k">Доход в месяц</div><div className="stat-v">{money(data.monthlyIncome, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Пришло на счёт</div><div className="stat-v pos">{money(data.inflow, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Снято на траты</div><div className="stat-v neg">{money(data.spent, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Прирост капитала ~30д</div><div className={`stat-v ${data.capitalGrowth >= 0 ? 'pos' : 'neg'}`}>{signedMoney(data.capitalGrowth, cur)}</div></div>
             {data.monthExpenses > 0 && (
               <div className="stat-r"><div className="stat-k">Расходы в этом месяце</div><div className="stat-v neg">{money(data.monthExpenses, cur)}</div></div>
             )}
-            <div className="stat-r"><div className="stat-k">Прирост капитала ~30д</div><div className={`stat-v ${data.capitalGrowth >= 0 ? 'pos' : 'neg'}`}>{signedMoney(data.capitalGrowth, cur)}</div></div>
             {data.savingsRate != null && (
               <div className="stat-r"><div className="stat-k">Норма сбережений</div><div className="stat-v pos">{percent(data.savingsRate, false)}</div></div>
             )}
+          </div>
+
+          <label className="section-lbl">Долговая нагрузка</label>
+          <div className="stat">
+            <div className="stat-r"><div className="stat-k">Платежи по кредитам / мес</div><div className="stat-v">{money(data.debtPaymentsMonthly, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Доля от дохода</div><div className={`stat-v ${data.debtLoadPct > 40 ? 'neg' : ''}`}>{percent(data.debtLoadPct, false)}</div></div>
+            <div className="stat-r"><div className="stat-k">Проценты по долгам / мес</div><div className="stat-v neg">{money(data.interestPaidMonthly, cur)}</div></div>
+          </div>
+
+          <label className="section-lbl">Ликвидность и проценты</label>
+          <div className="stat">
+            <div className="stat-r"><div className="stat-k">Ликвидные деньги <span className="hint">· счета + вклады</span></div><div className="stat-v">{money(data.liquid, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Подушка без дохода</div><div className={`stat-v ${data.runwayMonths < 3 ? 'neg' : 'pos'}`}>{runwayText(data.runwayMonths)}</div></div>
+            <div className="stat-r"><div className="stat-k">Проценты по вкладам / мес</div><div className="stat-v pos">{money(data.interestEarnedMonthly, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Чистые проценты / мес</div><div className={`stat-v ${data.netInterestMonthly >= 0 ? 'pos' : 'neg'}`}>{signedMoney(data.netInterestMonthly, cur)}</div></div>
+            <div className="stat-r"><div className="stat-k">Плечо <span className="hint">· долги ÷ активы</span></div><div className="stat-v">{percent(data.leverage, false)}</div></div>
           </div>
 
           {data.trend.length > 0 && (
             <div className="chart-card">
               <div className="chart-title">В капитал по месяцам</div>
               <MonthBars trend={data.trend} />
+              <div className="clegend" style={{ marginTop: 8 }}>
+                {data.trend.map((t) => <div key={t.month}>{t.month.slice(5)}: {t.capShare > 0 ? percent(t.capShare, false) : '—'}</div>)}
+              </div>
             </div>
           )}
 
           <p className="note">
-            «В капитал из дохода» включает и рост активов, и курс — не только твои сбережения. Норма сбережений (доход − расходы) точнее; она появляется, когда трекаешь расходы через бота. График наполнится с накоплением истории по месяцам.
+            «В капитал со счёта» — какая доля пришедших на зарплатный счёт денег осталась капиталом (не снята на траты). Погашение долгов считается капиталом, а не тратой. Разовые поступления вроде отпускных не задирают процент, т.к. входят и в приход. График ниже — сколько капитала прибавлялось по месяцам.
           </p>
 
           <button className="linkbtn" onClick={() => setEditing(true)}>Изменить доход</button>

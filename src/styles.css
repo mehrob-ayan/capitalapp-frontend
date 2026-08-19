@@ -230,6 +230,8 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0
 /* ---- history ---- */
 .delta { font-size: 12.5px; font-weight: 600; margin-top: 8px; }
 .seg.period { margin: 14px 0 4px; }
+.seg.wrap { flex-wrap: wrap; }
+.seg.wrap button { flex: 1 0 auto; min-width: 72px; }
 .chart-card { margin: 12px 0 6px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 10px; }
 .chart-svg { display: block; width: 100%; height: auto; }
 .chart-empty { color: var(--muted); font-size: 12.5px; line-height: 1.5; padding: 14px 6px; text-align: center; }

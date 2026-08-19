@@ -254,13 +254,19 @@ export function RepaySheet({ asset, onClose, onDone }: { asset: Asset; onClose: 
 
 export function TopUpSheet({ asset, onClose, onDone }: { asset: Asset; onClose: () => void; onDone: () => void }) {
   const [amount, setAmount] = useState('')
+  const [accounts, setAccounts] = useState<Account[] | null>(null)
+  const [accId, setAccId] = useState<number | null>(null) // null = внешние деньги
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    void getAccounts().then((a) => { setAccounts(a); if (a.length) setAccId((a.find((x) => x.isSalary) ?? a[0]).id) })
+  }, [])
 
   async function save() {
     const amt = parseFloat(amount)
     if (!Number.isFinite(amt) || amt <= 0) return
     setBusy(true)
-    try { await topupDeposit(asset.id, amt); onDone() } finally { setBusy(false) }
+    try { await topupDeposit(asset.id, amt, accId ?? undefined); onDone() } finally { setBusy(false) }
   }
 
   return (
@@ -268,7 +274,20 @@ export function TopUpSheet({ asset, onClose, onDone }: { asset: Asset; onClose: 
       <div className="fld"><label>Сумма пополнения ({asset.currency})</label><div className="inp-wrap">
         <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
       </div></div>
-      <p className="note">Добавится к текущему балансу вклада. Уже накопленные проценты сохраняются, дальше капают на новую сумму.</p>
+      {accounts && accounts.length > 0 && (
+        <div className="fld"><label>Откуда деньги</label><div className="seg wrap">
+          {accounts.map((a) => (
+            <button key={a.id} type="button" className={a.id === accId ? 'on' : ''} onClick={() => setAccId(a.id)}>{a.name}</button>
+          ))}
+          <button type="button" className={accId === null ? 'on' : ''} onClick={() => setAccId(null)}>Внешние</button>
+        </div></div>
+      )}
+      <p className="note">
+        {accId === null
+          ? 'Деньги извне — просто добавятся к вкладу (капитал вырастет).'
+          : 'Спишется с выбранного счёта и переедет во вклад — это перевод, а не трата: капитал не меняется, и норма капитализации не занижается.'}
+        {' '}Накопленные проценты сохраняются.
+      </p>
       <button className="mainbtn" disabled={busy} onClick={save}>{busy ? 'Пополнение…' : 'Пополнить'}</button>
     </Sheet>
   )

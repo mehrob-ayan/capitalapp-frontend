@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../../kinds'
-import { getRates, setRates, exportData, importData, getMe, setAutoRates } from '../../api'
+import { getRates, setRates, refreshRates, exportData, importData, getMe, setAutoRates } from '../../api'
 import { symbol } from '../../format'
 import { MoneyInput } from '../../components/MoneyInput'
 import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../../notify'
@@ -50,6 +50,12 @@ export function DesktopSettings({ baseCurrency, onChangeCurrency, onRatesSaved }
     for (const c of EDITABLE) { const p = parseFloat(draft[c]); if (Number.isFinite(p) && p > 0) map[c] = 1 / p }
     try { await setRates(map); setSaved(true); onRatesSaved() } finally { setSaving(false) }
   }
+  async function refreshFromExchange() {
+    setBusy(true)
+    try { await refreshRates(); loadRatesDraft(); onRatesSaved(); setSaved(true) }
+    catch { alert('Не удалось получить курс с биржи. Проверь интернет и попробуй ещё раз.') }
+    finally { setBusy(false) }
+  }
   async function doExport() {
     setBusy(true)
     try {
@@ -85,8 +91,9 @@ export function DesktopSettings({ baseCurrency, onChangeCurrency, onRatesSaved }
             <MoneyInput className="rate-v" value={draft[c]} onChange={(v) => setDraft({ ...draft, [c]: v })} />
           </div>
         ))}
+        {draft && <button className="dt-btn-ghost" style={{ width: '100%', marginTop: 8 }} disabled={busy} onClick={refreshFromExchange}>{busy ? 'Получаю курс…' : '↻ Обновить курс из ЦБ'}</button>}
         {draft && <button className="mainbtn" disabled={saving} onClick={save}>{saving ? 'Сохранение…' : 'Сохранить курсы'}</button>}
-        {saved && <p className="saved-msg">Курсы сохранены</p>}
+        {saved && <p className="saved-msg">Курсы обновлены</p>}
       </section>
 
       <div className="dt-col-cards">

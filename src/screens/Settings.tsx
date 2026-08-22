@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { CURRENCIES } from '../kinds'
-import { getRates, setRates, exportData, importData, getMe, setAutoRates } from '../api'
+import { getRates, setRates, refreshRates, exportData, importData, getMe, setAutoRates } from '../api'
 import { symbol } from '../format'
 import { MoneyInput } from '../components/MoneyInput'
 import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../notify'
@@ -78,6 +78,20 @@ export function Settings({
       setAutoOn(u.autoRates ?? false)
       loadRatesDraft() // reflect freshly fetched rates
       onRatesSaved()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function refreshFromExchange() {
+    setBusy(true)
+    try {
+      await refreshRates()
+      loadRatesDraft()
+      onRatesSaved()
+      setSaved(true)
+    } catch {
+      alert('Не удалось получить курс с биржи. Проверь интернет и попробуй ещё раз.')
     } finally {
       setBusy(false)
     }
@@ -200,11 +214,16 @@ export function Settings({
         ))}
 
       {draft && (
+        <button className="cbtn-sec" style={{ width: '100%', marginTop: 8 }} disabled={busy} onClick={refreshFromExchange}>
+          {busy ? 'Получаю курс…' : '↻ Обновить курс из ЦБ'}
+        </button>
+      )}
+      {draft && (
         <button className="mainbtn" disabled={saving} onClick={save}>
           {saving ? 'Сохранение…' : 'Сохранить курсы'}
         </button>
       )}
-      {saved && <p className="saved-msg">Курсы сохранены</p>}
+      {saved && <p className="saved-msg">Курсы обновлены</p>}
 
       <div className="soon-row">
         <div className="rate-l">

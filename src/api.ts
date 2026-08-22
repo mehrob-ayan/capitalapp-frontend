@@ -147,6 +147,8 @@ export const topupDeposit = (id: number, amount: number, accountId?: number) =>
 export const getRates = () => request<Record<string, number>>('/api/v1/rates')
 export const setRates = (rates: Record<string, number>) =>
   request<Record<string, number>>('/api/v1/rates', { method: 'PATCH', body: JSON.stringify({ rates }) })
+export const refreshRates = () =>
+  request<Record<string, number>>('/api/v1/rates/refresh', { method: 'POST' })
 
 export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number; note: string }
 export interface History {

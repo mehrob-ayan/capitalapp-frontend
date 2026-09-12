@@ -6,6 +6,7 @@ import {
 import { DEBT_SCHEMES, KIND_META, kindColor } from '../kinds'
 import { money, signedMoney, duration } from '../format'
 import { CapitalChart, GoalRing, signedPct, activityDot, compactDate } from './desktop/shared'
+import type { HistMetric } from '../historyMetric'
 
 const PERIODS: [string, string][] = [['1m', '1М'], ['6m', '6М'], ['1y', '1Г'], ['all', 'Всё']]
 const PERIOD_LABEL: Record<string, string> = { '1m': 'за месяц', '6m': 'за полгода', '1y': 'за год', all: 'за всё время' }
@@ -35,6 +36,7 @@ export interface DesktopOverviewProps {
   onOpenOptions: () => void
   onOpenGoals: () => void
   onOpenActivity: () => void
+  onOpenHistory: (metric: HistMetric) => void
 }
 
 export function DesktopOverview(props: DesktopOverviewProps) {
@@ -109,15 +111,15 @@ export function DesktopOverview(props: DesktopOverviewProps) {
                   <button key={v} className={v === period ? 'on' : ''} onClick={() => setPeriod(v)}>{l}</button>
                 ))}
               </div>
-              <CapitalChart points={history?.points ?? []} goal={goalBase} viewH={168} />
+              <CapitalChart points={history?.points ?? []} goal={goalBase} viewH={168} currency={base} />
             </div>
           </div>
 
           <div className="dt-metrics">
-            <Metric label="Активы" dot="var(--pos)" cls="pos" value={money(overview.assets, base)} />
-            <Metric label="Обязательства" dot="var(--neg)" cls="neg" value={money(overview.liabilities, base)} />
-            <Metric label="Поток в месяц" cls={overview.monthlyFlow >= 0 ? 'pos' : 'neg'} value={signedMoney(overview.monthlyFlow, base)} sub="доход − платежи по кредитам" />
-            <Metric label="Проценты по кредиту" cls="neg" value={history && history.dailyInterest > 0 ? `−${money(history.dailyInterest, base)}/дн` : '—'} sub="капает каждый день" />
+            <Metric label="Активы" dot="var(--pos)" cls="pos" value={money(overview.assets, base)} onClick={() => props.onOpenHistory('assets')} />
+            <Metric label="Обязательства" dot="var(--neg)" cls="neg" value={money(overview.liabilities, base)} onClick={() => props.onOpenHistory('liabilities')} />
+            <Metric label="Поток в месяц" cls={overview.monthlyFlow >= 0 ? 'pos' : 'neg'} value={signedMoney(overview.monthlyFlow, base)} sub="доход − платежи по кредитам" onClick={() => props.onOpenHistory('flow')} />
+            <Metric label="Проценты по кредиту" cls="neg" value={history && history.dailyInterest > 0 ? `−${money(history.dailyInterest, base)}/дн` : '—'} sub="капает каждый день" onClick={() => props.onOpenHistory('interest')} />
           </div>
         </section>
 
@@ -229,12 +231,14 @@ export function DesktopOverview(props: DesktopOverviewProps) {
   )
 }
 
-function Metric({ label, dot, cls, value, sub }: { label: string; dot?: string; cls?: string; value: string; sub?: string }) {
-  return (
-    <div className="dt-metric">
-      <div className="dt-metric-k">{dot && <span className="dt-metric-dot" style={{ background: dot }} />}{label}</div>
+function Metric({ label, dot, cls, value, sub, onClick }: { label: string; dot?: string; cls?: string; value: string; sub?: string; onClick?: () => void }) {
+  const inner = (
+    <>
+      <div className="dt-metric-k">{dot && <span className="dt-metric-dot" style={{ background: dot }} />}{label}{onClick && <span className="dt-metric-go">график ›</span>}</div>
       <div className={`dt-metric-v ${cls ?? ''}`}>{value}</div>
       {sub && <div className="dt-metric-s">{sub}</div>}
-    </div>
+    </>
   )
+  if (onClick) return <button type="button" className="dt-metric tap" onClick={onClick}>{inner}</button>
+  return <div className="dt-metric">{inner}</div>
 }

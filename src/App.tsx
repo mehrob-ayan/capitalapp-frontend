@@ -41,6 +41,7 @@ import { DesktopSalary } from './screens/desktop/DesktopSalary'
 import { DesktopAdvisor } from './screens/desktop/DesktopAdvisor'
 import { nowTime } from './screens/desktop/shared'
 import { useIsDesktop } from './useMediaQuery'
+import { pendingMetric } from './historyMetric'
 
 type Route = { name: Tab } | { name: 'goals' } | { name: 'options' } | { name: 'activity' } | { name: 'efficiency' } | { name: 'salary' } | { name: 'advisor' } | { name: 'accounts' } | { name: 'account'; id: number } | { name: 'category'; kind: Kind } | { name: 'position'; id: number }
 
@@ -224,6 +225,7 @@ export default function App() {
             onOpenOptions={() => setRoute({ name: 'options' })}
             onOpenGoals={() => setRoute({ name: 'goals' })}
             onOpenActivity={() => setRoute({ name: 'activity' })}
+            onOpenHistory={(m) => { pendingMetric.key = m; setRoute({ name: 'history' }) }}
           />
         )
         break
@@ -242,7 +244,7 @@ export default function App() {
         break
       case 'goals':
         active = 'goals'; title = 'Цели'
-        content = <DesktopGoals />
+        content = <DesktopGoals base={base} onOpenAsset={(id) => setRoute({ name: 'position', id })} />
         break
       case 'options':
         active = 'options'; title = 'Опционы'

@@ -182,6 +182,7 @@ function EntrySheet({
   onSaved: () => void
 }) {
   const [amount, setAmount] = useState(entry ? String(entry.amount) : '')
+  const [cur, setCur] = useState(currency)
   const [note, setNote] = useState(entry?.note ?? '')
   const [busy, setBusy] = useState(false)
 
@@ -190,7 +191,7 @@ function EntrySheet({
     if (!Number.isFinite(amt) || amt <= 0) return
     setBusy(true)
     try {
-      const body = { kind, amount: amt, note: note.trim() }
+      const body = { kind, amount: amt, currency: cur, note: note.trim() }
       if (entry) await updateAccountEntry(entry.id, body)
       else await addAccountEntry(accountId, body)
       onSaved()
@@ -204,10 +205,14 @@ function EntrySheet({
 
   const title = kind === 'income' ? 'Доход' : 'Списание'
   return (
-    <Sheet title={entry ? `Изменить · ${title}` : title} subtitle={currency} onClose={onClose}>
-      <div className="fld"><label>Сумма</label><div className="inp-wrap">
+    <Sheet title={entry ? `Изменить · ${title}` : title} subtitle={`на счёт в ${currency}`} onClose={onClose}>
+      <div className="fld"><label>Валюта суммы</label><div className="seg wrap">
+        {CURRENCIES.map((c) => <button key={c} type="button" className={c === cur ? 'on' : ''} onClick={() => setCur(c)}>{c}</button>)}
+      </div></div>
+      <div className="fld"><label>Сумма ({cur})</label><div className="inp-wrap">
         <MoneyInput className="inp big" placeholder="0" value={amount} onChange={setAmount} />
       </div></div>
+      {cur !== currency && <p className="note">Введёшь в {cur} — пересчитается в {currency} счёта по текущему курсу.</p>}
       <div className="fld"><label>Заметка <span className="hint">· напр. отпускные, премия</span></label><div className="inp-wrap">
         <input className="inp" value={note} onChange={(e) => setNote(e.target.value)} />
       </div></div>

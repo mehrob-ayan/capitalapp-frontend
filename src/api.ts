@@ -59,6 +59,7 @@ export interface Asset {
   subtype?: string
   status?: string
   excludeFromNetWorth?: boolean
+  showAsGoal?: boolean
   isAccount?: boolean
   debtScheme?: string
   loanType?: string
@@ -83,6 +84,7 @@ export interface AssetInput {
   subtype?: string
   status?: string
   excludeFromNetWorth?: boolean
+  showAsGoal?: boolean
   debtScheme?: string
   loanType?: string
   termMonths?: number
@@ -150,7 +152,7 @@ export const setRates = (rates: Record<string, number>) =>
 export const refreshRates = () =>
   request<Record<string, number>>('/api/v1/rates/refresh', { method: 'POST' })
 
-export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number; note: string }
+export interface HistoryPoint { date: string; netWorth: number; assets: number; liabilities: number; interest: number; note: string }
 export interface History {
   baseCurrency: string
   points: HistoryPoint[]
@@ -161,6 +163,21 @@ export interface History {
 }
 export const getHistory = (period: string, currency?: string) =>
   request<History>(`/api/v1/history?period=${period}${currency ? `&currency=${currency}` : ''}`)
+
+export interface FlowPoint { month: string; income: number; payments: number; net: number }
+export interface Flow { baseCurrency: string; points: FlowPoint[] }
+export const getFlow = (period: string, currency?: string) =>
+  request<Flow>(`/api/v1/history/flow?period=${period}${currency ? `&currency=${currency}` : ''}`)
+
+export interface DebtChange { name: string; currency: string; paid: number; outstanding: number; closed: boolean; payments: number }
+export interface DebtChanges { baseCurrency: string; paidTotal: number; items: DebtChange[] }
+export const getDebtChanges = (period: string) =>
+  request<DebtChanges>(`/api/v1/history/debt-changes?period=${period}`)
+
+export interface AssetChange { kind: string; start: number; now: number; delta: number }
+export interface AssetChanges { baseCurrency: string; totalDelta: number; items: AssetChange[] }
+export const getAssetChanges = (period: string) =>
+  request<AssetChanges>(`/api/v1/history/asset-changes?period=${period}`)
 
 export const setIncome = (monthlyIncome: number, incomeCurrency: string) =>
   request<User>('/api/v1/me', { method: 'PATCH', body: JSON.stringify({ monthlyIncome, incomeCurrency }) })
@@ -213,16 +230,25 @@ export interface Goal {
   targetAmount: number
   currency: string
   monthlyContribution: number
+  linkedAssetId: number | null
+  goalKind: string // capital | savings | debt
   currentAmount: number
   progressPercent: number
   remaining: number
   monthsToGoal: number | null
+  linkedAssetName: string
+  contributedThisMonth: number
+  onTrack: boolean
+  targetDate: string
+  exceeded: boolean
+  overIncome: boolean
 }
 export interface GoalInput {
   title: string
   targetAmount: number
   currency: string
   monthlyContribution: number
+  linkedAssetId: number | null
 }
 export const exportData = () => request<unknown>('/api/v1/export')
 export const importData = (payload: unknown) =>
@@ -341,7 +367,7 @@ export interface AccountEntry {
 }
 export interface AccountEntries { account: Account; entries: AccountEntry[] }
 export interface AccountInput { name: string; currency: string; startingBalance: number; isSalary: boolean }
-export interface EntryInput { kind: 'income' | 'payment'; amount: number; note?: string; date?: string }
+export interface EntryInput { kind: 'income' | 'payment'; amount: number; currency?: string; note?: string; date?: string }
 
 export const getAccounts = () => request<Account[]>('/api/v1/accounts')
 export const createAccount = (a: AccountInput) =>

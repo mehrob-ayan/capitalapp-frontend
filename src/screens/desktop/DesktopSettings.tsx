@@ -3,6 +3,7 @@ import { CURRENCIES } from '../../kinds'
 import { getRates, setRates, refreshRates, exportData, importData, getMe, setAutoRates } from '../../api'
 import { symbol } from '../../format'
 import { MoneyInput } from '../../components/MoneyInput'
+import { ThemeToggle } from '../../components/ThemeToggle'
 import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../../notify'
 
 const EDITABLE = ['TJS', 'UZS'] as const
@@ -97,6 +98,12 @@ export function DesktopSettings({ baseCurrency, onChangeCurrency, onRatesSaved }
       </section>
 
       <div className="dt-col-cards">
+        <section className="dt-card dt-pad">
+          <div className="dt-card-head"><span className="dt-card-ttl">Оформление</span></div>
+          <div className="fld" style={{ marginBottom: 0 }}><label>Тема</label><ThemeToggle /></div>
+          <p className="note">«Системная» — как в системе. Тёмная бережёт глаза ночью.</p>
+        </section>
+
         <section className="dt-card dt-pad">
           <div className="dt-card-head"><span className="dt-card-ttl">Автоматизация</span></div>
           <div className="soon-row" style={{ marginTop: 0 }}>

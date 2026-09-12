@@ -26,6 +26,7 @@ export function AssetForm({
 
   const [currency, setCurrency] = useState(existing?.currency ?? 'TJS')
   const [values, setValues] = useState<Record<string, string>>(() => initialValues(fields, existing, isDebt ? scheme : undefined))
+  const [showAsGoal, setShowAsGoal] = useState(existing?.showAsGoal ?? false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,7 +36,7 @@ export function AssetForm({
     setSaving(true)
     setError(null)
     try {
-      const input = { ...toInput(kind, currency, values, isDebt ? scheme : undefined), excludeFromNetWorth: false }
+      const input = { ...toInput(kind, currency, values, isDebt ? scheme : undefined), excludeFromNetWorth: false, showAsGoal: isDebt ? showAsGoal : false }
       if (existing) await updateAsset(existing.id, input)
       else await createAsset(input)
       onSaved()
@@ -82,6 +83,13 @@ export function AssetForm({
       {(isDebt ? schemeDef.fields : fields).map((f) => (
         <FieldRow key={f.key} field={f} value={values[f.key] ?? ''} currency={currency} onChange={(v) => set(f.key, v)} />
       ))}
+
+      {isDebt && (
+        <div className="soon-row">
+          <div className="rate-l">Показать как цель<small>закрытие долга попадёт в раздел «Цели»</small></div>
+          <button type="button" className={`switch ${showAsGoal ? 'on' : ''}`} onClick={() => setShowAsGoal((v) => !v)} aria-pressed={showAsGoal} />
+        </div>
+      )}
 
       {error && <p className="form-error">{error}</p>}
 

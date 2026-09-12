@@ -1,8 +1,15 @@
+import { useState } from 'react'
 import type { Asset } from '../../api'
 import { KIND_META, kindColor, type Kind } from '../../kinds'
 import { money, percent, monthYear } from '../../format'
 
 const SUBTYPE_LABEL: Record<string, string> = { stock: 'Акции', bond: 'Облигации', fund: 'Фонд' }
+
+function isClosed(a: Asset): boolean {
+  if (a.kind === 'debt') return (a.metrics.loan ? a.metrics.loan.outstanding : a.value) <= 0.5
+  if (a.kind === 'lent') return a.value <= 0.5
+  return false
+}
 
 function itemSub(a: Asset): string {
   const parts: string[] = []
@@ -23,7 +30,10 @@ export function DesktopCategory({ kind, assets, base, onOpenAsset, onOpenAccount
   onAdd: (kind: Kind) => void
 }) {
   const meta = KIND_META[kind]
-  const items = assets.filter((a) => a.kind === kind)
+  const all = assets.filter((a) => a.kind === kind)
+  const items = all.filter((a) => !isClosed(a))
+  const closed = all.filter(isClosed)
+  const [showClosed, setShowClosed] = useState(false)
   const isLiability = meta.isLiability ?? false
   const subtotal = items.reduce((s, a) => s + (isLiability ? a.metrics.liabilityBase : a.metrics.valueBase), 0)
   const totalProfit = items.reduce((s, a) => s + a.metrics.profitBase, 0)
@@ -73,7 +83,25 @@ export function DesktopCategory({ kind, assets, base, onOpenAsset, onOpenAccount
               <span className="dt-chev">›</span>
             </button>
           ))}
-          {items.length === 0 && <p className="muted" style={{ padding: '14px 0' }}>Пусто. Добавь первую позицию.</p>}
+          {items.length === 0 && closed.length === 0 && <p className="muted" style={{ padding: '14px 0' }}>Пусто. Добавь первую позицию.</p>}
+          {items.length === 0 && closed.length > 0 && <p className="muted" style={{ padding: '14px 0' }}>Все закрыты — активных нет.</p>}
+
+          {closed.length > 0 && (
+            <>
+              <button className="closed-toggle" onClick={() => setShowClosed((v) => !v)}>
+                {showClosed ? '▾' : '▸'} Закрытые ({closed.length})
+              </button>
+              {showClosed && closed.map((a) => (
+                <button key={a.id} className="dt-trow dt-cat-grid dim" onClick={() => onOpenAsset(a.id)}>
+                  <span className="dt-tc-name">
+                    <span className="dt-li-ic" style={{ background: kindColor(a.kind) }}>{meta.letter}</span>
+                    <span className="dt-li-tx"><b>{a.name}</b><small>Закрыт</small></span>
+                  </span>
+                  <span className="r muted">✓</span><span /><span /><span /><span /><span className="dt-chev">›</span>
+                </button>
+              ))}
+            </>
+          )}
         </div>
       </section>
     </div>

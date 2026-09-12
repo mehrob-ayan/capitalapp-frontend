@@ -169,12 +169,13 @@ function StackedBars({ comp }: { comp: Composition }) {
 }
 
 export function SnapshotSheet({
-  date, initial, initialNote, currency, onClose, onSaved,
+  date, initial, initialNote, currency, noteOnly, onClose, onSaved,
 }: {
   date: string
   initial: number
   initialNote: string
   currency: string
+  noteOnly?: boolean
   onClose: () => void
   onSaved: () => void
 }) {
@@ -211,12 +212,14 @@ export function SnapshotSheet({
           onChange={(e) => setNote(e.target.value)}
         />
       </div>
-      <div className="fld">
-        <label>Капитал в этот день ({currency})</label>
-        <div className="inp-wrap">
-          <MoneyInput className="inp big" value={val} onChange={setVal} />
+      {!noteOnly && (
+        <div className="fld">
+          <label>Капитал в этот день ({currency})</label>
+          <div className="inp-wrap">
+            <MoneyInput className="inp big" value={val} onChange={setVal} />
+          </div>
         </div>
-      </div>
+      )}
       <button className="mainbtn" disabled={busy} onClick={save}>{busy ? 'Сохранение…' : 'Сохранить'}</button>
       <button className="linkbtn danger" disabled={busy} onClick={remove}>Удалить снимок</button>
     </Sheet>

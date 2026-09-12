@@ -3,6 +3,7 @@ import { CURRENCIES } from '../kinds'
 import { getRates, setRates, refreshRates, exportData, importData, getMe, setAutoRates } from '../api'
 import { symbol } from '../format'
 import { MoneyInput } from '../components/MoneyInput'
+import { ThemeToggle } from '../components/ThemeToggle'
 import { notifySupported, notifyEnabled, enableNotify, disableNotify } from '../notify'
 
 const EDITABLE = ['TJS', 'UZS'] as const
@@ -185,6 +186,10 @@ export function Settings({
       </button>
 
       <label className="section-lbl">Настройки</label>
+      <div className="fld">
+        <label>Тема</label>
+        <ThemeToggle />
+      </div>
       <div className="fld">
         <label>Итог показывать в</label>
         <div className="seg">

@@ -10,9 +10,35 @@ const BRAND = {
   dark: { brand: '#37A78E', brandInk: '#04231C', gold: '#D7B15D', pos: '#50BE87', neg: '#E0805F' },
 }
 
+export type ThemePref = 'light' | 'dark' | 'system'
+const THEME_KEY = 'capital_theme'
+
+/** The user's manual theme choice; 'system' follows Telegram/OS. */
+export function getThemePref(): ThemePref {
+  try {
+    const v = localStorage.getItem(THEME_KEY)
+    if (v === 'light' || v === 'dark' || v === 'system') return v
+  } catch { /* ignore */ }
+  return 'system'
+}
+
+export function setThemePref(pref: ThemePref): void {
+  try { localStorage.setItem(THEME_KEY, pref) } catch { /* ignore */ }
+  applyTheme()
+}
+
+function resolveScheme(): 'light' | 'dark' {
+  const pref = getThemePref()
+  if (pref !== 'system') return pref
+  return tg?.colorScheme ?? preferredScheme()
+}
+
 export function applyTheme(): void {
-  const scheme: 'light' | 'dark' = tg?.colorScheme ?? preferredScheme()
-  const p: ThemeParams = tg?.themeParams ?? {}
+  const pref = getThemePref()
+  const scheme: 'light' | 'dark' = resolveScheme()
+  // Only borrow Telegram's neutral colours when following the system; a manual
+  // override uses our own palette so it wins over the host theme.
+  const p: ThemeParams = pref === 'system' ? (tg?.themeParams ?? {}) : {}
   const neutrals = scheme === 'dark' ? DARK : LIGHT
   const brand = scheme === 'dark' ? BRAND.dark : BRAND.light
 
@@ -39,6 +65,10 @@ export function applyTheme(): void {
 /** Re-apply when the user switches Telegram theme while the app is open. */
 export function watchTheme(): void {
   tg?.onEvent('themeChanged', applyTheme)
+  // Follow OS scheme changes while on 'system'.
+  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => {
+    if (getThemePref() === 'system') applyTheme()
+  })
 }
 
 function preferredScheme(): 'light' | 'dark' {

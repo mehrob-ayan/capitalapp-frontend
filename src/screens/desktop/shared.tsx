@@ -1,8 +1,23 @@
 // Shared desktop-only chart primitives and formatters. All colours come from
 // CSS variables so light/dark themes work automatically.
+import { useState } from 'react'
 import type { History, Composition, EffMonth, MonthTrend } from '../../api'
 import { kindColor } from '../../kinds'
-import { dateShort } from '../../format'
+import { dateShort, money } from '../../format'
+
+// Maps a mouse position over a chart to the nearest data index (0..n-1).
+function hoverIndex(e: React.MouseEvent, n: number): number {
+  const r = e.currentTarget.getBoundingClientRect()
+  const f = r.width > 0 ? (e.clientX - r.left) / r.width : 0
+  return Math.max(0, Math.min(n - 1, Math.round(f * (n - 1))))
+}
+
+// Horizontal offset for a tooltip so it never spills past the chart edges.
+function tipShift(frac: number): string {
+  if (frac < 0.12) return '0'
+  if (frac > 0.88) return '-100%'
+  return '-50%'
+}
 
 export const nf1 = (n: number) => (Math.round(Math.abs(n) * 10) / 10).toString().replace('.', ',')
 export const signedPct = (p: number) => `${p > 0 ? '+' : p < 0 ? '−' : ''}${nf1(p)}%`
@@ -54,7 +69,8 @@ export function BigRing({ percent }: { percent: number }) {
 
 // Capital area chart: fixed gridlines, brand gradient fill + curve, dashed goal
 // line, gold end dot, and a 5-stop date axis below.
-export function CapitalChart({ points, goal, viewH = 168 }: { points: History['points']; goal?: number; viewH?: number }) {
+export function CapitalChart({ points, goal, viewH = 168, currency = 'USD' }: { points: History['points']; goal?: number; viewH?: number; currency?: string }) {
+  const [hi, setHi] = useState<number | null>(null)
   if (points.length < 2) {
     return <div className="dt-chart-empty">График появится, когда накопится история за несколько дней.</div>
   }
@@ -80,22 +96,44 @@ export function CapitalChart({ points, goal, viewH = 168 }: { points: History['p
   const goalY = showGoal ? Math.max(3, Math.min(viewH - 3, y(goal as number))) : 0
   const grid = [0.25, 0.5, 0.75].map((f) => Math.round(f * viewH))
   const axisIdx = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(f * (n - 1)))
+  const noteIdx = points.map((p, i) => (p.note ? i : -1)).filter((i) => i >= 0)
+  const hp = hi != null ? points[hi] : null
+  const hx = hi != null ? hi * stepX : 0
+  const frac = hi != null ? hi / (n - 1) : 0
 
   return (
     <div className="dt-chart">
-      <svg viewBox={`0 0 ${W} ${viewH}`} preserveAspectRatio="none" className="dt-chart-svg" style={{ height: viewH + 42 }} role="img" aria-label="График капитала">
-        <defs>
-          <linearGradient id="dtFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="var(--brand)" stopOpacity="0.24" />
-            <stop offset="1" stopColor="var(--brand)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {grid.map((gy) => <line key={gy} x1="0" y1={gy} x2={W} y2={gy} stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
-        <path d={area} fill="url(#dtFill)" />
-        <path d={line} fill="none" stroke="var(--brand)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-        {showGoal && <line x1="0" y1={goalY} x2={W} y2={goalY} stroke="var(--gold)" strokeWidth="1.2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
-        <circle cx={last[0]} cy={last[1]} r="4.5" fill="var(--gold)" stroke="var(--card)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-      </svg>
+      <div className="dt-chart-wrap" onMouseMove={(e) => setHi(hoverIndex(e, n))} onMouseLeave={() => setHi(null)}>
+        <svg viewBox={`0 0 ${W} ${viewH}`} preserveAspectRatio="none" className="dt-chart-svg" style={{ height: viewH }} role="img" aria-label="График капитала">
+          <defs>
+            <linearGradient id="dtFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="var(--brand)" stopOpacity="0.24" />
+              <stop offset="1" stopColor="var(--brand)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {grid.map((gy) => <line key={gy} x1="0" y1={gy} x2={W} y2={gy} stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
+          <path d={area} fill="url(#dtFill)" />
+          <path d={line} fill="none" stroke="var(--brand)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          {showGoal && <line x1="0" y1={goalY} x2={W} y2={goalY} stroke="var(--gold)" strokeWidth="1.2" strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
+          {noteIdx.map((i) => <circle key={i} cx={i * stepX} cy={y(values[i])} r="3" fill="var(--gold)" stroke="var(--card)" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />)}
+          {hp && <line x1={hx} y1="0" x2={hx} y2={viewH} stroke="var(--muted)" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />}
+          <circle cx={last[0]} cy={last[1]} r="4.5" fill="var(--gold)" stroke="var(--card)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+          {hp && <circle cx={hx} cy={y(values[hi as number])} r="4" fill="var(--brand)" stroke="var(--card)" strokeWidth="2" vectorEffect="non-scaling-stroke" />}
+        </svg>
+        <div className="dt-chart-yl">
+          <span>{money(max, currency)}</span>
+          <span>{money((max + min) / 2, currency)}</span>
+          <span>{money(min, currency)}</span>
+        </div>
+        {showGoal && <div className="dt-chart-goal" style={{ top: `${(goalY / viewH) * 100}%` }}>цель {money(goal as number, currency)}</div>}
+        {hp && (
+          <div className="dt-chart-tip" style={{ left: `${frac * 100}%`, transform: `translateX(${tipShift(frac)})` }}>
+            <b>{money(values[hi as number], currency)}</b>
+            <span>{dateShort(hp.date)}</span>
+            {hp.note && <em>📝 {hp.note}</em>}
+          </div>
+        )}
+      </div>
       <div className="dt-chart-axis">
         {axisIdx.map((i, k) => <span key={k}>{k === axisIdx.length - 1 ? 'сегодня' : compactDate(points[i].date)}</span>)}
       </div>
@@ -103,8 +141,11 @@ export function CapitalChart({ points, goal, viewH = 168 }: { points: History['p
   )
 }
 
-// Two overlaid line series (assets / liabilities) on one scale.
-export function LinesChart({ series, viewH = 130 }: { series: { color: string; values: number[] }[]; viewH?: number }) {
+// One or more line series on one scale, with an optional hover tooltip.
+export function LinesChart({ series, viewH = 130, dates, currency = 'USD', labels }: {
+  series: { color: string; values: number[] }[]; viewH?: number; dates?: string[]; currency?: string; labels?: string[]
+}) {
+  const [hi, setHi] = useState<number | null>(null)
   const all = series.flatMap((s) => s.values)
   if (all.length < 2) return <div className="dt-chart-empty">Мало данных для графика.</div>
   const W = 620
@@ -112,17 +153,43 @@ export function LinesChart({ series, viewH = 130 }: { series: { color: string; v
   const min = Math.min(...all)
   const max = Math.max(...all)
   const span = max - min || 1
+  const n = Math.max(...series.map((s) => s.values.length))
+  const stepX = W / Math.max(1, n - 1)
   const grid = [0.33, 0.66].map((f) => Math.round(f * viewH))
+  const yOf = (v: number) => padY + (viewH - 2 * padY) * (1 - (v - min) / span)
+  const hx = hi != null ? hi * stepX : 0
+  const frac = hi != null ? hi / Math.max(1, n - 1) : 0
+  const axisIdx = dates ? [0, 0.5, 1].map((f) => Math.round(f * (dates.length - 1))) : []
+
   return (
-    <svg viewBox={`0 0 ${W} ${viewH}`} preserveAspectRatio="none" className="dt-chart-svg" style={{ height: viewH }} role="img">
-      {grid.map((gy) => <line key={gy} x1="0" y1={gy} x2={W} y2={gy} stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
-      {series.map((s, si) => {
-        const n = s.values.length
-        const stepX = W / Math.max(1, n - 1)
-        const d = s.values.map((v, i) => `${i ? 'L' : 'M'}${(i * stepX).toFixed(1)},${(padY + (viewH - 2 * padY) * (1 - (v - min) / span)).toFixed(1)}`).join(' ')
-        return <path key={si} d={d} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-      })}
-    </svg>
+    <div className="dt-chart">
+      <div className="dt-chart-wrap" onMouseMove={(e) => setHi(hoverIndex(e, n))} onMouseLeave={() => setHi(null)}>
+        <svg viewBox={`0 0 ${W} ${viewH}`} preserveAspectRatio="none" className="dt-chart-svg" style={{ height: viewH }} role="img">
+          {grid.map((gy) => <line key={gy} x1="0" y1={gy} x2={W} y2={gy} stroke="var(--line)" strokeWidth="1" vectorEffect="non-scaling-stroke" />)}
+          {series.map((s, si) => {
+            const d = s.values.map((v, i) => `${i ? 'L' : 'M'}${(i * stepX).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ')
+            return <path key={si} d={d} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+          })}
+          {hi != null && <line x1={hx} y1="0" x2={hx} y2={viewH} stroke="var(--muted)" strokeWidth="1" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />}
+          {hi != null && series.map((s, si) => s.values[hi] != null && (
+            <circle key={si} cx={hx} cy={yOf(s.values[hi])} r="4" fill={s.color} stroke="var(--card)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+          ))}
+        </svg>
+        <div className="dt-chart-yl">
+          <span>{money(max, currency)}</span>
+          <span>{money(min, currency)}</span>
+        </div>
+        {hi != null && (
+          <div className="dt-chart-tip" style={{ left: `${frac * 100}%`, transform: `translateX(${tipShift(frac)})` }}>
+            {series.map((s, si) => s.values[hi] != null && (
+              <b key={si} style={{ color: s.color }}>{labels?.[si] ? `${labels[si]}: ` : ''}{money(s.values[hi], currency)}</b>
+            ))}
+            {dates?.[hi] && <span>{dateShort(dates[hi])}</span>}
+          </div>
+        )}
+      </div>
+      {dates && <div className="dt-chart-axis">{axisIdx.map((i, k) => <span key={k}>{k === axisIdx.length - 1 ? 'сегодня' : compactDate(dates[i])}</span>)}</div>}
+    </div>
   )
 }
 

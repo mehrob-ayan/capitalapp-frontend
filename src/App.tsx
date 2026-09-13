@@ -235,7 +235,7 @@ export default function App() {
         break
       case 'expenses':
         active = 'expenses'; title = 'Расходы'; subtitle = expSub
-        content = <DesktopExpenses onMeta={setExpSub} />
+        content = <DesktopExpenses key={base} onMeta={setExpSub} />
         break
       case 'accounts':
       case 'account':
@@ -248,15 +248,15 @@ export default function App() {
         break
       case 'options':
         active = 'options'; title = 'Опционы'
-        content = <DesktopOptions />
+        content = <DesktopOptions key={base} />
         break
       case 'efficiency':
         active = 'efficiency'; title = 'Эффективность'; subtitle = 'доход, расходы и прирост капитала'
-        content = <DesktopEfficiency />
+        content = <DesktopEfficiency key={base} />
         break
       case 'salary':
         active = 'salary'; title = 'Календарь зарплаты'; subtitle = 'когда придёт аванс и остаток'
-        content = <DesktopSalary />
+        content = <DesktopSalary key={base} />
         break
       case 'advisor':
         active = 'advisor'; title = 'Помощник'; subtitle = 'что нового и что стоит поправить'
@@ -264,7 +264,7 @@ export default function App() {
         break
       case 'activity':
         active = 'activity'; title = 'Действия'; subtitle = 'журнал изменений капитала'
-        content = <DesktopActivity />
+        content = <DesktopActivity key={base} />
         break
       case 'more':
         active = 'settings'; title = 'Настройки'; subtitle = 'валюта, курсы, автоматизация, данные'
@@ -334,15 +334,15 @@ export default function App() {
 
       {route.name === 'position' && <PositionRoute data={data} id={route.id} onBack={back} onEdit={(a) => setForm({ kind: a.kind as Kind, existing: a })} onDelete={removeAsset} onChanged={() => void reload()} />}
 
-      {route.name === 'expenses' && <Expenses addSignal={expenseAdd} />}
+      {route.name === 'expenses' && <Expenses key={data.overview.baseCurrency} addSignal={expenseAdd} />}
       {route.name === 'history' && <HistoryScreen baseCurrency={data.overview.baseCurrency} onChangeCurrency={changeCurrency} />}
       {route.name === 'goals' && <Goals onBack={back} />}
-      {route.name === 'options' && <OptionsScreen onBack={back} />}
-      {route.name === 'activity' && <ActivityScreen onBack={back} />}
-      {route.name === 'efficiency' && <EfficiencyScreen onBack={back} />}
+      {route.name === 'options' && <OptionsScreen key={data.overview.baseCurrency} onBack={back} />}
+      {route.name === 'activity' && <ActivityScreen key={data.overview.baseCurrency} onBack={back} />}
+      {route.name === 'efficiency' && <EfficiencyScreen key={data.overview.baseCurrency} onBack={back} />}
       {route.name === 'accounts' && <AccountsScreen onBack={back} onChanged={() => void reload()} />}
       {route.name === 'account' && <AccountsScreen initialAccountId={route.id} onBack={back} onChanged={() => void reload()} />}
-      {route.name === 'salary' && <SalaryCalendar onBack={back} />}
+      {route.name === 'salary' && <SalaryCalendar key={data.overview.baseCurrency} onBack={back} />}
       {route.name === 'advisor' && <Advisor onBack={back} />}
 
       {route.name === 'more' && (

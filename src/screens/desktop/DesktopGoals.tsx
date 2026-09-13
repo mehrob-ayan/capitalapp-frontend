@@ -9,19 +9,22 @@ function GoalsSummary({ goals, base, rates, incomeBase }: {
   goals: Goal[]; base: string; rates: Record<string, number>; incomeBase: number
 }) {
   const conv = (amt: number, cur: string) => (rates[cur] && rates[base] ? (amt * rates[cur]) / rates[base] : 0)
-  const active = goals.filter((g) => g.monthsToGoal !== 0)
-  const done = goals.length - active.length
+  // Money KPIs cover accumulation goals only — paying off a debt isn't "saving".
+  const savings = goals.filter((g) => g.goalKind !== 'debt')
+  const active = savings.filter((g) => g.monthsToGoal !== 0)
+  const done = savings.length - active.length
   const remaining = active.reduce((s, g) => s + conv(g.remaining, g.currency), 0)
   const monthly = active.reduce((s, g) => s + conv(g.monthlyContribution, g.currency), 0)
-  const saved = goals.reduce((s, g) => s + conv(g.currentAmount, g.currency), 0)
+  const saved = savings.reduce((s, g) => s + conv(g.currentAmount, g.currency), 0)
   const pct = incomeBase > 0 ? Math.round((monthly / incomeBase) * 100) : null
   const paced = active.filter((g) => g.monthsToGoal && g.monthsToGoal > 0)
   const nearest = paced.slice().sort((a, b) => (a.monthsToGoal ?? 0) - (b.monthsToGoal ?? 0))[0]
   const farthest = paced.slice().sort((a, b) => (b.monthsToGoal ?? 0) - (a.monthsToGoal ?? 0))[0]
+  const debtCount = goals.filter((g) => g.goalKind === 'debt').length
 
   return (
     <section className="dt-card dt-pad dt-goals-sum">
-      <div className="dt-card-head"><span className="dt-card-ttl">Сводка по целям</span>
+      <div className="dt-card-head"><span className="dt-card-ttl">Сводка по накоплениям</span>
         <span className="dt-hint">{active.length} активных{done > 0 ? ` · ${done} достигнуто` : ''}</span>
       </div>
       <div className="dt-goals-kpis">
@@ -40,6 +43,7 @@ function GoalsSummary({ goals, base, rates, incomeBase }: {
           {farthest && farthest !== nearest && <> Самая дальняя: <b>{farthest.title}</b> — {duration(farthest.monthsToGoal ?? 0)}.</>}
         </p>
       )}
+      {debtCount > 0 && <p className="note">Долги-цели ({debtCount}) — это погашение, а не накопление, поэтому в суммы выше не входят (см. карточки ниже).</p>}
     </section>
   )
 }

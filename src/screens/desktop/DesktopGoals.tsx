@@ -9,13 +9,16 @@ function GoalsSummary({ goals, base, rates, incomeBase }: {
   goals: Goal[]; base: string; rates: Record<string, number>; incomeBase: number
 }) {
   const conv = (amt: number, cur: string) => (rates[cur] && rates[base] ? (amt * rates[cur]) / rates[base] : 0)
-  // Money KPIs cover accumulation goals only — paying off a debt isn't "saving".
+  // Accumulation metrics (saved / left to save) cover savings goals only —
+  // paying off a debt isn't "saving". The monthly plan, however, is the real
+  // cash outflow, so it includes debt-payoff goals too.
   const savings = goals.filter((g) => g.goalKind !== 'debt')
   const active = savings.filter((g) => g.monthsToGoal !== 0)
   const done = savings.length - active.length
   const remaining = active.reduce((s, g) => s + conv(g.remaining, g.currency), 0)
-  const monthly = active.reduce((s, g) => s + conv(g.monthlyContribution, g.currency), 0)
   const saved = savings.reduce((s, g) => s + conv(g.currentAmount, g.currency), 0)
+  const monthly = goals.filter((g) => g.monthsToGoal !== 0)
+    .reduce((s, g) => s + conv(g.monthlyContribution, g.currency), 0)
   const pct = incomeBase > 0 ? Math.round((monthly / incomeBase) * 100) : null
   const paced = active.filter((g) => g.monthsToGoal && g.monthsToGoal > 0)
   const nearest = paced.slice().sort((a, b) => (a.monthsToGoal ?? 0) - (b.monthsToGoal ?? 0))[0]
@@ -43,7 +46,7 @@ function GoalsSummary({ goals, base, rates, incomeBase }: {
           {farthest && farthest !== nearest && <> Самая дальняя: <b>{farthest.title}</b> — {duration(farthest.monthsToGoal ?? 0)}.</>}
         </p>
       )}
-      {debtCount > 0 && <p className="note">Долги-цели ({debtCount}) — это погашение, а не накопление, поэтому в суммы выше не входят (см. карточки ниже).</p>}
+      {debtCount > 0 && <p className="note">Долги-цели ({debtCount}) не входят в «накоплено» и «осталось» (это погашение, не накопление), но входят в «план в месяц» — это реальный ежемесячный отток.</p>}
     </section>
   )
 }
